@@ -45,7 +45,9 @@ func (queue *RequestQueue) add(request *Request) {
 		}
 	}
 	queue.pendingRequests = append(queue.pendingRequests, request)
-	queue.HasReady.Signal()
+	if request.ExecState == Ready {
+		queue.HasReady.Signal()
+	}
 	queue.Mutex.Unlock()
 }
 
@@ -79,8 +81,8 @@ func (queue *RequestQueue) nextRequest() *Request {
 				queue.Mutex.Unlock()
 				return request
 			}
-			queue.HasReady.Wait()
 		}
+		queue.HasReady.Wait()
 	}
 	queue.Mutex.Unlock()
 	return nil

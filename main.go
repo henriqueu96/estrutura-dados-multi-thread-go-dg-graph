@@ -12,9 +12,12 @@ func main() {
 	fmt.Println("Inicio")
 
 	go consumer(parallelizer)
-	producer(parallelizer)
+	go consumer(parallelizer)
+	go consumer(parallelizer)
 
-	fmt.Println("Fim")
+	go producer(parallelizer)
+	blq := make(chan int)
+	<-blq
 }
 
 func consumer(parallelizer requests.Parallelizer) {
@@ -26,8 +29,10 @@ func consumer(parallelizer requests.Parallelizer) {
 }
 
 func producer(parallelizer requests.Parallelizer) {
-	for i := 0; i < 200; i++ {
+	i := 0
+	for {
 		curr := strconv.Itoa(i)
 		parallelizer.Add("Request: " + curr)
+		i++
 	}
 }
