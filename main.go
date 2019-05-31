@@ -7,12 +7,27 @@ import (
 )
 
 func main() {
-	parallelizer := requests.NewParallelizer(10)
+	parallelizer := requests.NewParallelizer(100)
 
-	for i := 200; i > 0; i-- {
+	fmt.Println("Inicio")
+
+	go consumer(parallelizer)
+	producer(parallelizer)
+
+	fmt.Println("Fim")
+}
+
+func consumer(parallelizer requests.Parallelizer) {
+	for {
+		request := parallelizer.NextRequest()
+		fmt.Println("Request " + request.Name)
+		parallelizer.Remove(request)
+	}
+}
+
+func producer(parallelizer requests.Parallelizer) {
+	for i := 0; i < 200; i++ {
 		curr := strconv.Itoa(i)
 		parallelizer.Add("Request: " + curr)
-		fmt.Println("Entrou")
 	}
-	fmt.Println("O Loko bixo")
 }

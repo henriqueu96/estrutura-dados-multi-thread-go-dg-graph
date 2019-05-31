@@ -76,13 +76,13 @@ func (queue *RequestQueue) nextRequest() *Request {
 		for _, request := range queue.pendingRequests {
 			if request.ExecState == Ready {
 				request.ExecState = Running
+				queue.Mutex.Unlock()
 				return request
 			}
 			queue.HasReady.Wait()
 		}
-		queue.Mutex.Unlock()
 	}
-
+	queue.Mutex.Unlock()
 	return nil
 }
 
