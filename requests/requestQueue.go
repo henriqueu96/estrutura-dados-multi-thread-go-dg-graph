@@ -16,14 +16,14 @@ type RequestQueue struct {
 
 func newRequestQueue(limit int) (queue RequestQueue) {
 	mutex := &sync.Mutex{}
-	newcond := sync.NewCond(mutex)
-	newcond2 := sync.NewCond(mutex)
+	notFull := sync.NewCond(mutex)
+	hasReady := sync.NewCond(mutex)
 
 	queue = RequestQueue{
 		limit:    limit,
 		Mutex:    mutex,
-		NotFull:  newcond,
-		HasReady: newcond2,
+		NotFull:  notFull,
+		HasReady: hasReady,
 	}
 	return
 }
