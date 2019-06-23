@@ -2,8 +2,6 @@ package requests
 
 import (
 	"sync"
-	"tcc/boolGenerator"
-	"time"
 )
 
 type RequestQueue struct {
@@ -28,17 +26,13 @@ func newRequestQueue(limit int) (queue RequestQueue) {
 	return
 }
 
-func isDependent() bool {
-	return boolGenerator.New(time.Now())
-}
-
 func (queue *RequestQueue) add(request *Request) {
 	queue.Mutex.Lock()
 	for queue.requestCount() >= queue.limit {
 		queue.NotFull.Wait()
 	}
 	for _, current := range queue.pendingRequests {
-		if isDependent() {
+		if request.isDependent(current) {
 			request.addDependency(current)
 			current.addDependent(request)
 			request.ExecState = Blocked

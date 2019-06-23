@@ -47,18 +47,6 @@ func TestRequestQueue_Remove_ShouldRemoveRequest(t *testing.T) {
 	}
 }
 
-func TestRequestQueue_nextQueue_shouldRetunNilWhenNoOneIsReady(t *testing.T) {
-	request := newTestRequest()
-
-	queue := newTestQueue()
-	queue.add(&request)
-
-	result := queue.nextRequest();
-	if (result != nil) {
-		t.Fail()
-	}
-}
-
 func TestRequestQueue_clear_shouldClearTheList(t *testing.T) {
 	request := newTestRequest()
 	request2 := newTestRequest()

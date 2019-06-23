@@ -2,37 +2,48 @@ package main
 
 import (
 	"fmt"
-	"strconv"
+	"math/rand"
+	"tcc/boolGenerator"
 	"tcc/requests"
+	"time"
 )
 
-func main() {
-	parallelizer := requests.NewParallelizer(100)
+var mylist = requests.NewMyList()
 
+func main(){
 	fmt.Println("Inicio")
+	parallelizer := requests.NewParallelizer(5)
 
-	go consumer(parallelizer)
-	go consumer(parallelizer)
-	go consumer(parallelizer)
+	var final = make(chan int)
 
-	go producer(parallelizer)
-	blq := make(chan int)
-	<-blq
+	go consumer(&parallelizer)
+	go producer(&parallelizer)
+
+	<- final
 }
 
-func consumer(parallelizer requests.Parallelizer) {
+func consumer(parallelizer *requests.Parallelizer) {
 	for {
 		request := parallelizer.NextRequest()
-		fmt.Println("Request " + request.Name)
+		find := request.Execute(&mylist)
+		message := ""
+		if(find){
+			message = "found!"
+		} else {
+			message = "not found!"
+		}
+		fmt.Println(message)
 		parallelizer.Remove(request)
 	}
 }
 
-func producer(parallelizer requests.Parallelizer) {
-	i := 0
+func producer(parallelizer *requests.Parallelizer) {
 	for {
-		curr := strconv.Itoa(i)
-		parallelizer.Add("Request: " + curr)
-		i++
+		isWrite := boolGenerator.NewByPercent(time.Now(), 10)
+		requestType := requests.Read
+		if isWrite {
+			requestType = requests.Write
+		}
+		parallelizer.Add(rand.Intn(5), requestType)
 	}
 }
