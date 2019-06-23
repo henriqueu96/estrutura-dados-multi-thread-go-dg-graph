@@ -13,10 +13,11 @@ func NewParallelizer(limit int) Parallelizer {
 	}
 }
 
-func (parallelizer *Parallelizer) Add(requestName string) {
-	request := newRequest(parallelizer.count, requestName, Ready)
+func (parallelizer *Parallelizer) Add(value int, requestType RequestType) *Request {
+	request := NewRequest(parallelizer.count, value, Ready, requestType)
 	parallelizer.queue.add(&request)
 	parallelizer.count++
+	return &request
 }
 
 func (parallelizer *Parallelizer) Remove(request *Request) {

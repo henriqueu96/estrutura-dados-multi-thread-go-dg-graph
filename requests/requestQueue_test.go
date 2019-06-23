@@ -47,33 +47,6 @@ func TestRequestQueue_Remove_ShouldRemoveRequest(t *testing.T) {
 	}
 }
 
-func TestRequestQueue_nextQueue_shouldRetunrTheFirstReady(t *testing.T) {
-	request := newTestRequest()
-	request2 := newTestRequest()
-	request2.ExecState = Ready
-
-	queue := newTestQueue()
-	queue.add(&request)
-	queue.add(&request2)
-
-	result := queue.nextRequest();
-	if (!isEqual(result, &request2)) {
-		t.Fail()
-	}
-}
-
-func TestRequestQueue_nextQueue_shouldRetunNilWhenNoOneIsReady(t *testing.T) {
-	request := newTestRequest()
-
-	queue := newTestQueue()
-	queue.add(&request)
-
-	result := queue.nextRequest();
-	if (result != nil) {
-		t.Fail()
-	}
-}
-
 func TestRequestQueue_clear_shouldClearTheList(t *testing.T) {
 	request := newTestRequest()
 	request2 := newTestRequest()

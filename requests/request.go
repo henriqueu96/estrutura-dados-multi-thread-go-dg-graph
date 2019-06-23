@@ -2,17 +2,19 @@ package requests
 
 type Request struct {
 	Id           int
-	Name         string
+	Value        int
 	ExecState    ExecState
+	RequestType  RequestType
 	dependencies []*Request
 	dependents   []*Request
 }
 
-func newRequest(id int, name string, state ExecState) Request {
+func NewRequest(id int, value int, state ExecState, requestType RequestType) Request {
 	return Request{
 		Id:           id,
-		Name:         name,
+		Value:        value,
 		ExecState:    state,
+		RequestType:  requestType,
 		dependencies: []*Request{},
 		dependents:   []*Request{},
 	}
@@ -56,4 +58,16 @@ func (request *Request) hasDependent() bool {
 
 func (request *Request) removeDependent(dependent *Request) {
 	request.dependents = removeRequest(request.dependents, dependent)
+}
+
+func (request *Request) Execute(myList *MyList) bool{
+	if(request.RequestType == Write){
+		return myList.add(request.Value)
+	} else{
+		return myList.get(request.Value)
+	}
+}
+
+func (request *Request) isDependent(possibleDependent *Request) bool {
+	return request.RequestType == Write || possibleDependent.RequestType == Write
 }

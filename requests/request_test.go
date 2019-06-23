@@ -3,7 +3,7 @@ package requests
 import "testing"
 
 func newTestRequest() Request {
-	return newRequest(1, "teste", Blocked)
+	return NewRequest(10, 10, Blocked, Read)
 }
 
 func TestRequest_AddDependency_ShouldAddAnDependencyToRequest(t *testing.T) {
@@ -45,7 +45,6 @@ func Test_isEqual_ShouldReturnTrue(t *testing.T) {
 func TestRequest_RemoveDependency_ShouldRemoveDependency(t *testing.T){
 	request := newTestRequest()
 	dependency := newTestRequest()
-	dependency.Name = "Dependency"
 
 	request.addDependency(&dependency)
 	request.removeDependency(&dependency)
@@ -119,4 +118,28 @@ func Test_RemoveRequest_ShouldNotRemoveRequest(t *testing.T){
 		t.Fail()
 	}
 
+}
+
+func Test_IsDependent_ShouldNotReturnTrue_WhenNoOneOfRequestsIsWrite(t *testing.T) {
+	request := newTestRequest()
+	possibleDependent := newTestRequest()
+
+	response := request.isDependent(&possibleDependent)
+
+	if(response){
+		t.Fail()
+	}
+}
+
+func Test_IsDependent_ShouldReturnTrue_WhenOneOfRequestsIsWrite(t *testing.T) {
+	request := newTestRequest()
+	possibleDependent := newTestRequest()
+
+	request.RequestType = Write
+
+	response := request.isDependent(&possibleDependent)
+
+	if(!response){
+		t.Fail()
+	}
 }
