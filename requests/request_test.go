@@ -3,7 +3,7 @@ package requests
 import "testing"
 
 func newTestRequest() Request {
-	return NewRequest(10, 10, Blocked, Read)
+	return NewRequest(10, Read)
 }
 
 func TestRequest_AddDependency_ShouldAddAnDependencyToRequest(t *testing.T) {

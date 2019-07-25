@@ -5,7 +5,7 @@ type Node struct {
 	next *Node;
 }
 
-func newNode(value int) Node{
+func NewNode(value int) Node{
 	return Node{
 		value: value,
 	}

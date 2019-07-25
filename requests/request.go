@@ -1,7 +1,6 @@
 package requests
 
 type Request struct {
-	Id           int
 	Value        int
 	ExecState    ExecState
 	RequestType  RequestType
@@ -9,11 +8,10 @@ type Request struct {
 	dependents   []*Request
 }
 
-func NewRequest(id int, value int, state ExecState, requestType RequestType) Request {
+func NewRequest(value int, requestType RequestType) Request {
 	return Request{
-		Id:           id,
 		Value:        value,
-		ExecState:    state,
+		ExecState:    Ready,
 		RequestType:  requestType,
 		dependencies: []*Request{},
 		dependents:   []*Request{},

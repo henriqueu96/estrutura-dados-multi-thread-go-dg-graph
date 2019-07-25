@@ -10,7 +10,7 @@ func NewMyList() MyList{
 }
 
 func (myList *MyList) add(value int) (exists bool) {
-	node := newNode(value)
+	node := NewNode(value)
 	if (myList.firstNode == nil) {
 		myList.firstNode = &node
 	} else{

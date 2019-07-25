@@ -8,8 +8,8 @@ func newTestParallizer() Parallelizer {
 
 func Test_Parallizer_Count_ShouldReturn1(t *testing.T){
 	parallizer := newTestParallizer()
-
-	parallizer.Add(10, Write)
+	request := newTestRequest()
+	parallizer.Add(&request)
 
 	if(parallizer.requestCount() != 1){
 		t.Fail()
