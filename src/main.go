@@ -1,11 +1,11 @@
-package main
+package src
 
 import (
 	"fmt"
 	"math/rand"
 	"os"
 	"strconv"
-	"tcc/requests"
+	"requests"
 	"time"
 )
 
