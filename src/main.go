@@ -1,4 +1,4 @@
-package src
+package main
 
 import (
 	"fmt"
@@ -22,10 +22,10 @@ func main() {
 		return
 	}
 
-	threadsNumber, _ := getIntArgument(0)
-	parallelizerLimit, _ := getIntArgument(1)
-	dependencyOdds, _ := getFloatArgument(2)
-	mylistLimit, _ := getIntArgument(3)
+	threadsNumber, _ := getIntArgument(1)
+	parallelizerLimit, _ := getIntArgument(2)
+	dependencyOdds, _ := getFloatArgument(3)
+	mylistLimit, _ := getIntArgument(4)
 
 	parallelizer := requests.NewParallelizer(parallelizerLimit)
 	preset := generatePreset(dependencyOdds, mylistLimit)
