@@ -34,7 +34,6 @@ func (myList *MyList) getLastNode() (lastNode *Node){
 }
 
 func (myList MyList) get(value int) (exists bool) {
-
 	if myList.firstNode == nil{
 		return
 	}

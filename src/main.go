@@ -14,8 +14,7 @@ var mylist = requests.NewMyList()
 var requestNumber = 0
 
 func main() {
-	fmt.Println("Inicio")
-	var final = make(chan int)
+	fmt.Println("-- Inicio --")
 
 	if (len(args) < 4) {
 		println("Seems like you are missing args!")
@@ -38,16 +37,16 @@ func main() {
 	for i := 0; i < threadsNumber; i++ {
 		worker := requests.NewWorker()
 		workers = append(workers, &worker)
-		go worker.Run(&parallelizer, &mylist, &requestNumber)
+		go worker.Run(&parallelizer, &mylist)
 	}
 
 	measureMetrics(&client, workers)
-
-	<-final
+	println("-- Final --")
 }
 
 func measureMetrics(client *requests.Client, workers []*requests.Worker) {
-	metric := 0;
+
+	population := 0;
 	for i := 0; i < 10; i++ {
 		workerProcessesNumber := 0;
 		time.Sleep(3 * 1000000000);
@@ -55,15 +54,20 @@ func measureMetrics(client *requests.Client, workers []*requests.Worker) {
 		for _, worker := range workers {
 			workerProcessesNumber += worker.ProcessNumber;
 		}
-		metric += messagesNumber - workerProcessesNumber;
-	}
-	metric = metric / 10;
-	for _, worker := range workers {
-		metric += worker.ProcessNumber
+		population += messagesNumber - workerProcessesNumber;
 	}
 
-	commands := metric / 30;
-	fmt.Print(commands);
+	population = population / 10;
+
+	processed := 0;
+	for _, worker := range workers {
+		processed += worker.ProcessNumber
+	}
+	processedPerSecound := float64(processed) / 30.0;
+
+	fmt.Print(processedPerSecound);
+	fmt.Print(" ")
+	fmt.Println(population);
 }
 
 func generatePreset(dependencyOdds float64, myListLimit int) (requests []*requests.Request) {

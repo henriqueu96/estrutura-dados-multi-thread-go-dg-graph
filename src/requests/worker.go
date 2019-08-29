@@ -6,14 +6,15 @@ type Worker struct {
 
 func NewWorker() Worker {
 	return Worker{
+		ProcessNumber: 0,
 	}
 }
 
-func (worker Worker) Run(parallelizer *Parallelizer, myList *MyList, requestNumber *int) {
+func (worker *Worker) Run(parallelizer *Parallelizer, myList *MyList) {
 	for {
 		request := parallelizer.NextRequest()
 		request.Execute(myList)
 		parallelizer.Remove(request)
-		*requestNumber++
+		worker.ProcessNumber++
 	}
 }

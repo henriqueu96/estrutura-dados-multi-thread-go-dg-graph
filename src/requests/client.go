@@ -10,11 +10,10 @@ func NewClient() Client{
 	}
 }
 
-func (client Client) Run(parallelizer *Parallelizer, preset []*Request) {
-	for {
-		i:= 0
-		request := preset[i]
-		parallelizer.Add(request)
-		i++
+func (client *Client) Run(parallelizer *Parallelizer, preset []*Request) {
+
+	for _, message := range preset {
+		parallelizer.Add(message)
+		client.MessagesNumber++
 	}
 }
