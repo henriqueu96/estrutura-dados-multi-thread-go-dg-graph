@@ -8,7 +8,7 @@ type dgNode struct {
 	dependenciesNumber       int
 	solvedDependenciesNumber int
 	// used to free the dependents
-	dependentsChannelsList      [] chan interface{}
+	dependentsChannelsList      []chan ManagementMessage
 	inManagementChannel         chan ManagementMessage
 	NextNodeInManagementChannel chan ManagementMessage
 }
@@ -17,50 +17,76 @@ func (node *dgNode) start() error {
 	for {
 		message := <-node.inManagementChannel
 		switch message.messageType {
+
 		case enterNewNode:
-			// todo: fazer a mensagem de novo node chegando
-		case newNodeAppeared:
 			if node.status == entering {
 				if node.NextNodeInManagementChannel == nil {
 					node.status = ready
 					go node.start()
 				} else {
-					node.NextNodeInManagementChannel <- NewManagementMessage(newNodeAppeared, node)
-					// todo: quando receber o nodo, pegar o request e ver se conflita, após, atribuir o next chanel para o  node.inManagementChannel
+					node.NextNodeInManagementChannel <- NewManagementMessage(newNodeAppeared, &node)
 				}
 
 			} else {
-				return errors.New("") // todo: definir texto do erro
+				return errors.New("Status incorreto para mensagem enterNewNode")
 			}
+
+		case newNodeAppeared:
+			newNode := message.parameter.(*dgNode)
+			if node.status != (entering | waiting | ready) {
+				return errors.New("Status incorreto para mensagem newNodeAppeared")
+			} else {
+				if node.request.isDependent(newNode.request) {
+					node.dependentsChannelsList = append(node.dependentsChannelsList, newNode.inManagementChannel)
+					newNode.inManagementChannel <- NewManagementMessage(hasConflictMessage, nil)
+				}
+			}
+
+			if node.status != (entering | waiting | ready | leaving) {
+				return errors.New("Status incorreto para mensagem newNodeAppeared")
+			} else {
+				if node.NextNodeInManagementChannel == nil {
+					newNode.inManagementChannel <- NewManagementMessage(endsConflictMessage, nil)
+				} else {
+					node.NextNodeInManagementChannel <- NewManagementMessage(newNodeAppeared, &node)
+				}
+			}
+			/*
+				if DELETED nao
+				deve
+				fazer
+				nada ...
+			*/
 		case hasConflictMessage:
 			if node.status != entering {
-				return errors.New("") // todo: definir texto do erro
+				return errors.New("Status incorreto para mensagem haConflictMessage")
 			} else {
 				node.dependenciesNumber++
 			}
+
 		case endsConflictMessage:
 			if node.status != entering {
-				return errors.New("") // todo: definir texto do erro
+				return errors.New("Status incorreto para mensagem endsConflictMessage ")
 			}
 			node.status = waiting
-
 			if node.dependenciesNumber == node.solvedDependenciesNumber {
 				node.status = ready
 				go node.start()
 			}
+
 		case decreaseConflict:
-			node.solvedDependenciesNumber++ // mais uma dep resolvida
-			if node.status == waiting && node.dependenciesNumber == node.solvedDependenciesNumber { // era a ultima ?
+			node.solvedDependenciesNumber++
+			if node.status == waiting && node.dependenciesNumber == node.solvedDependenciesNumber {
 				node.status = ready
 				go node.start()
 			}
+
 		case endFunc:
-			node.status = leaving // marca como acabou de executar, saindo */
+			node.status = leaving
 			for _, e := range node.dependentsChannelsList {
-				e <- decreaseConflict
+				e <- NewManagementMessage(decreaseConflict, nil)
 			}
 
-			//mchi <- freeMSG -- todo: perguntar dotti
 		}
 	}
 }

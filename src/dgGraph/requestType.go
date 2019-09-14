@@ -1,4 +1,4 @@
-package requests
+package dgGraph
 
 type requestType string
 
