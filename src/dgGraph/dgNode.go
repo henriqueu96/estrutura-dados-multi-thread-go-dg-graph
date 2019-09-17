@@ -22,7 +22,7 @@ func (node *dgNode) start() error {
 			if node.status == entering {
 				if node.NextNodeInManagementChannel == nil {
 					node.status = ready
-					go node.start()
+					go Work(node.request)
 				} else {
 					node.NextNodeInManagementChannel <- NewManagementMessage(newNodeAppeared, &node)
 				}
@@ -71,14 +71,14 @@ func (node *dgNode) start() error {
 			node.status = waiting
 			if node.dependenciesNumber == node.solvedDependenciesNumber {
 				node.status = ready
-				go node.start()
+				go Work(node.request)
 			}
 
 		case decreaseConflict:
 			node.solvedDependenciesNumber++
 			if node.status == waiting && node.dependenciesNumber == node.solvedDependenciesNumber {
 				node.status = ready
-				go node.start()
+				go Work(node.request)
 			}
 
 		case endFunc:
@@ -91,6 +91,15 @@ func (node *dgNode) start() error {
 	}
 }
 
-func newNode() dgNode {
-	return dgNode{}
+func newNode(request *request) dgNode {
+	return dgNode{
+		request: request,
+		dependenciesNumber: 0,
+		solvedDependenciesNumber: 0,
+		dependentsChannelsList: make([] chan ManagementMessage),
+		inManagementChannel: make(chan ManagementMessage),
+		NextNodeInManagementChannel: nil,
+
+
+	}
 }

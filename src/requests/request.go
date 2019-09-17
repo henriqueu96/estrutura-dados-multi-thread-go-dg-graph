@@ -8,11 +8,11 @@ type Request struct {
 	dependents   []*Request
 }
 
-func NewRequest(value int, requestType RequestType) Request {
+func NewRequest(value int, RequestType RequestType) Request {
 	return Request{
 		Value:        value,
 		ExecState:    Ready,
-		RequestType:  requestType,
+		RequestType:  RequestType,
 		dependencies: []*Request{},
 		dependents:   []*Request{},
 	}
