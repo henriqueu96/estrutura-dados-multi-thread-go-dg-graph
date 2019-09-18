@@ -5,8 +5,8 @@ type dgGraph struct {
 	GraphLimit int
 }
 
-func (dgGraph *dgGraph) add(request *request) {
-	node := newNode()
+func (dgGraph *dgGraph) add(request *DGRequest) {
+	node := newNode(request)
 	node.status = entering
 	node.request = request
 	node.NextNodeInManagementChannel = dgGraph.lastNodeInManagementChannel

@@ -1,6 +1,9 @@
 package dgGraph
 
-import "sync/atomic"
+import (
+	"fmt"
+	"sync/atomic"
+)
 
 var myList = NewMyList()
 var processNumber uint64 = 0;
@@ -14,8 +17,9 @@ func getProcessNumber() uint64{
 }
 
 
-func Work(request *request){
+func Work(request *DGRequest){
 	request.Execute(&myList)
 	incrementProcessNumber()
+	fmt.Print("o loko bixo" )
 }
 

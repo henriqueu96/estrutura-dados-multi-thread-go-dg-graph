@@ -10,7 +10,7 @@ func NewDGClient() dgClient{
 	}
 }
 
-func (client dgClient) Run(parallelizer *dgGraph, preset []*request) {
+func (client dgClient) Run(parallelizer *dgGraph, preset []*DGRequest) {
 	for {
 		i:= 0
 		request := preset[i]

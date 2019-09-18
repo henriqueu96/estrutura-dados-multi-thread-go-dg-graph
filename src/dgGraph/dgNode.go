@@ -4,7 +4,7 @@ import "errors"
 
 type dgNode struct {
 	status                   dgNodeStatus
-	request                  *request
+	request                  *DGRequest
 	dependenciesNumber       int
 	solvedDependenciesNumber int
 	// used to free the dependents
@@ -91,15 +91,13 @@ func (node *dgNode) start() error {
 	}
 }
 
-func newNode(request *request) dgNode {
+func newNode(request *DGRequest) dgNode {
 	return dgNode{
-		request: request,
-		dependenciesNumber: 0,
-		solvedDependenciesNumber: 0,
-		dependentsChannelsList: make([] chan ManagementMessage),
-		inManagementChannel: make(chan ManagementMessage),
+		request:                     request,
+		dependenciesNumber:          0,
+		solvedDependenciesNumber:    0,
+		dependentsChannelsList:      []chan ManagementMessage{},
+		inManagementChannel:         make(chan ManagementMessage),
 		NextNodeInManagementChannel: nil,
-
-
 	}
 }
