@@ -12,16 +12,24 @@ func NewManagementMessage(messageType ManagementMessageType, parameter interface
 	}
 }
 
-type ManagementMessageType int;
+type ManagementMessageType string;
 
 const (
-	enterNewNode        ManagementMessageType = 0 //liberando nodo para entrar no grapho
-	newNodeAppeared     ManagementMessageType = 1 // nodo pergunta se tem conflitos
-	hasConflictMessage  ManagementMessageType = 2 // tem conflito
-	endsConflictMessage ManagementMessageType = 3 // nodo mais antigo avisa que terminou as mensagens de conflito
-	decreaseConflict    ManagementMessageType = 4 // decrementa um conflito
-	endFunc             ManagementMessageType = 5 // termina execução
-
-
-
+	enterNewNode        ManagementMessageType = "enterNewNode" //liberando nodo para entrar no grapho
+	newNodeAppeared     ManagementMessageType = "newNodeAppeared" // nodo pergunta se tem conflitos
+	hasConflictMessage  ManagementMessageType = "hasConflictMessage" // tem conflito
+	endsConflictMessage ManagementMessageType = "endsConflictMessage" // nodo mais antigo avisa que terminou as mensagens de conflito
+	decreaseConflict    ManagementMessageType = "decreaseConflict" // decrementa um conflito
+	endFunc             ManagementMessageType = "endFunc" // termina execução
 )
+
+
+var MessageTypes = map[ManagementMessageType] string{
+	enterNewNode:   "enterNewNode",
+	newNodeAppeared:  "newNodeAppeared",
+	hasConflictMessage:     "hasConflictMessage",
+	endsConflictMessage:    "endsConflictMessage",
+	decreaseConflict:    "decreaseConflict",
+	endFunc:    "endFunc",
+}
+
