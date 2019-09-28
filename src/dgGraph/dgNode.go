@@ -99,5 +99,6 @@ func newNode(request *DGRequest) dgNode {
 		dependentsChannelsList:      []chan ManagementMessage{},
 		inManagementChannel:         make(chan ManagementMessage),
 		NextNodeInManagementChannel: nil,
+
 	}
 }

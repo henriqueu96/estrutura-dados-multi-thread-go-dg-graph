@@ -11,7 +11,7 @@ func (dgGraph *dgGraph) add(request *DGRequest) {
 	node.request = request
 	node.NextNodeInManagementChannel = dgGraph.lastNodeInManagementChannel
 	dgGraph.lastNodeInManagementChannel = node.inManagementChannel
-	node.start()
+	go node.start()
 	node.inManagementChannel <- NewManagementMessage(enterNewNode, nil)
 }
 

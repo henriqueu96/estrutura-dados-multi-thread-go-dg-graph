@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	//"requests"
 	"runtime"
 	"strconv"
+	"time"
 
 	//	"requests"
 	//	"time"
@@ -21,7 +23,6 @@ func main() {
 		return
 	}
 
-
 	threadsNumber, _ := getIntArgument(1)
 	graphLimit, _ := getIntArgument(2)
 	dependencyOdds, _ := getFloatArgument(3)
@@ -30,26 +31,11 @@ func main() {
 
 	graph := dgGraph.NewGraph(graphLimit)
 	preset := generatePreset(dependencyOdds, mylistLimit)
-	fmt.Println(preset)
-	client := dgGraph.NewDGClient()// vai criar os nodos
+	client := dgGraph.NewDGClient()
 	go client.Run(&graph, preset)
 
-	/*workers := []*requests.Worker{} // vai receber os resultados
-
-	for i := 0; i < threadsNumber; i++ {
-		worker := requests.NewWorker()
-		workers = append(workers, &worker)
-		go worker.Run(&graph, &mylist, &requestNumber)
-	}
-
-	measureMetrics(&client, workers)
-}*/
-
-
-
-
+	measureMetrics(&client)
 }
-
 
 func getRandonInt(limit int) int {
 	return rand.Intn(limit)
@@ -77,7 +63,7 @@ func generatePreset(dependencyOdds float64, myListLimit int) (requests []*dgGrap
 	for i := 0; i < 16777216; i++ {
 		requests = append(requests, generateRequest(getRandonInt(myListLimit), dependencyOdds))
 	}
-	return
+	return requests
 }
 
 func generateRequest(value int, dependencyOdds float64) *dgGraph.DGRequest {
@@ -87,4 +73,20 @@ func generateRequest(value int, dependencyOdds float64) *dgGraph.DGRequest {
 	}
 	request := dgGraph.NewRequest(value, requestType)
 	return &request
+}
+
+func measureMetrics(client *dgGraph.DGClient) {
+	var metric uint64 = 0;
+	for i := 0; i < 10; i++ {
+		var workerProcessesNumber uint64 = 0;
+		time.Sleep(3 * 1000000000);
+		messagesNumber := client.MessagesNumber;
+		workerProcessesNumber += dgGraph.GetProcessNumber()
+		metric += messagesNumber - workerProcessesNumber;
+	}
+	metric = metric / 10;
+	metric += dgGraph.GetProcessNumber()
+
+	commands := metric / 30;
+	fmt.Print(commands);
 }

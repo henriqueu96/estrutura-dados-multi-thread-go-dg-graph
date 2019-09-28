@@ -1,20 +1,21 @@
 package dgGraph
 
-type dgClient struct {
-	MessagesNumber int
+type DGClient struct {
+	MessagesNumber uint64
 }
 
-func NewDGClient() dgClient{
-	return dgClient{
+func NewDGClient() DGClient {
+	return DGClient{
 		MessagesNumber: 0,
 	}
 }
 
-func (client dgClient) Run(parallelizer *dgGraph, preset []*DGRequest) {
+func (client DGClient) Run(parallelizer *dgGraph, preset []*DGRequest) {
 	for {
-		i:= 0
+		i := 0
 		request := preset[i]
 		parallelizer.add(request)
 		i++
 	}
+
 }

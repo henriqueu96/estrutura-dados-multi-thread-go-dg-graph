@@ -12,7 +12,7 @@ func incrementProcessNumber(){
 	atomic.AddUint64(&processNumber, 1);
 }
 
-func getProcessNumber() uint64{
+func GetProcessNumber() uint64{
 	return atomic.LoadUint64(&processNumber)
 }
 
