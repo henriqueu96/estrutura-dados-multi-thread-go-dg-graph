@@ -4,8 +4,8 @@ type Request struct {
 	Value        int
 	ExecState    ExecState
 	RequestType  RequestType
-	dependencies []*Request
-	dependents   []*Request
+	dependencies *[]*Request
+	dependents   *[]*Request
 }
 
 func NewRequest(value int, requestType RequestType) Request {
@@ -13,26 +13,28 @@ func NewRequest(value int, requestType RequestType) Request {
 		Value:        value,
 		ExecState:    Ready,
 		RequestType:  requestType,
-		dependencies: []*Request{},
-		dependents:   []*Request{},
+		dependencies: &[]*Request{},
+		dependents:   &[]*Request{},
 	}
 }
 
 func (request *Request) addDependency(dependency *Request) {
-	request.dependencies = append(request.dependencies, dependency)
+	newList := append(*request.dependencies, dependency)
+	request.dependencies = &newList
 }
 
 func (request *Request) removeDependency(dependency *Request) {
 	request.dependencies = removeRequest(request.dependencies, dependency)
 }
 
-func removeRequest(requests []*Request, requestToRemove *Request) (requestsResult []*Request) {
-	requestsResult = []*Request{}
-	for _, request := range requests {
+func removeRequest(requests *[]*Request, requestToRemove *Request) (requestsResult *[]*Request) {
+	requestsResult = & []*Request{}
+	for _, request := range *requests {
 		var isToRemove = isEqual(request, requestToRemove)
 		if !isToRemove {
 			var obj = &request
-			requestsResult = append(requestsResult, *obj)
+			newList := append(*requestsResult, *obj)
+			requestsResult = &newList
 		}
 	}
 	return
@@ -43,15 +45,19 @@ func isEqual(request *Request, request2 *Request) bool {
 }
 
 func (request Request) hasDependency() bool {
-	return len(request.dependencies) > 0
+	if request.dependencies == nil{
+		return false
+	}
+	return len(*request.dependencies) > 0
 }
 
 func (request *Request) addDependent(dependent *Request) {
-	request.dependents = append(request.dependents, dependent)
+	newList := append(*request.dependents, dependent)
+	request.dependents = &newList
 }
 
 func (request *Request) hasDependent() bool {
-	return len(request.dependents) > 0;
+	return len(*request.dependents) > 0;
 }
 
 func (request *Request) removeDependent(dependent *Request) {

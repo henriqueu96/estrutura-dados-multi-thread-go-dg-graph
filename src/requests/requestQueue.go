@@ -5,7 +5,7 @@ import (
 )
 
 type RequestQueue struct {
-	pendingRequests []*Request
+	pendingRequests *[]*Request
 	limit           int
 	Mutex           *sync.Mutex
 	NotFull         *sync.Cond
@@ -22,6 +22,7 @@ func newRequestQueue(limit int) (queue RequestQueue) {
 		Mutex:    mutex,
 		NotFull:  notFull,
 		HasReady: hasReady,
+		pendingRequests: &[]*Request{},
 	}
 	return
 }
@@ -31,14 +32,15 @@ func (queue *RequestQueue) add(request *Request) {
 	for queue.requestCount() >= queue.limit {
 		queue.NotFull.Wait()
 	}
-	for _, current := range queue.pendingRequests {
+	for _, current := range *queue.pendingRequests {
 		if request.isDependent(current) {
 			request.addDependency(current)
 			current.addDependent(request)
 			request.ExecState = Blocked
 		}
 	}
-	queue.pendingRequests = append(queue.pendingRequests, request)
+	newList := append(*queue.pendingRequests, request)
+	queue.pendingRequests = &newList
 	if request.ExecState == Ready {
 		queue.HasReady.Signal()
 	}
@@ -46,13 +48,13 @@ func (queue *RequestQueue) add(request *Request) {
 }
 
 func (queue *RequestQueue) hasRequest() bool {
-	return len(queue.pendingRequests) > 0
+	return len(*queue.pendingRequests) > 0
 }
 
 func (queue *RequestQueue) remove(request *Request) {
 	queue.Mutex.Lock()
 
-	for _, current := range request.dependents {
+	for _, current := range *request.dependents {
 		if current != nil {
 			current.removeDependency(request)
 			if !current.hasDependency() {
@@ -69,7 +71,7 @@ func (queue *RequestQueue) remove(request *Request) {
 func (queue *RequestQueue) nextRequest() *Request {
 	queue.Mutex.Lock()
 	for true {
-		for _, request := range queue.pendingRequests {
+		for _, request := range *queue.pendingRequests {
 			if request.ExecState == Ready {
 				request.ExecState = Running
 				queue.Mutex.Unlock()
@@ -84,10 +86,10 @@ func (queue *RequestQueue) nextRequest() *Request {
 
 func (queue *RequestQueue) clear() {
 	queue.Mutex.Lock()
-	queue.pendingRequests = []*Request{}
+	queue.pendingRequests = &[]*Request{}
 	queue.Mutex.Unlock()
 }
 
 func (queue *RequestQueue) requestCount() int {
-	return len(queue.pendingRequests)
+	return len(*queue.pendingRequests)
 }

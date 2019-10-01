@@ -10,7 +10,7 @@ func TestRequest_AddDependency_ShouldAddAnDependencyToRequest(t *testing.T) {
 	request := newTestRequest()
 	dependency := newTestRequest()
 	request.addDependency(&dependency)
-	if(len(request.dependencies) == 0){
+	if(len(*request.dependencies) == 0){
 		t.Fail()
 	}
 }
@@ -98,9 +98,9 @@ func TestRequest_HasDependent_ShouldReturnTrue(t *testing.T){
 
 func Test_RemoveRequest_ShouldRemoveRequest(t *testing.T){
 	request := newTestRequest()
-	list := []*Request{ &request }
+	list := &[]*Request{ &request }
 	list = removeRequest(list, &request)
-	if(len(list) > 0){
+	if(len(*list) > 0){
 		t.Fail()
 	}
 
@@ -110,11 +110,11 @@ func Test_RemoveRequest_ShouldNotRemoveRequest(t *testing.T){
 	request := newTestRequest()
 	request2 := newTestRequest()
 
-	list := []*Request{ &request }
+	list := &[]*Request{ &request }
 
 	list = removeRequest(list, &request2)
 
-	if(len(list) == 0){
+	if(len(*list) == 0){
 		t.Fail()
 	}
 

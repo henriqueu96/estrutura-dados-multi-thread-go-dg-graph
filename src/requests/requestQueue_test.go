@@ -57,7 +57,7 @@ func TestRequestQueue_clear_shouldClearTheList(t *testing.T) {
 
 	queue.clear()
 
-	if (len(queue.pendingRequests) > 0) {
+	if (len(*queue.pendingRequests) > 0) {
 		t.Fail()
 	}
 }

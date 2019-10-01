@@ -2,7 +2,6 @@ package requests
 
 type Node struct {
 	value int;
-	next *Node;
 }
 
 func NewNode(value int) Node{
@@ -13,12 +12,4 @@ func NewNode(value int) Node{
 
 func(node Node) getValue() int{
 	return node.value
-}
-
-func(node Node) getNext() *Node{
-	return node.next
-}
-
-func(node *Node) setNext(next *Node){
-	node.next = next
 }

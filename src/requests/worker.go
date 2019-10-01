@@ -1,7 +1,10 @@
 package requests
 
+import "sync/atomic"
+
 type Worker struct {
-	ProcessNumber int
+	Id int
+	ProcessNumber uint64
 }
 
 func NewWorker() Worker {
@@ -13,8 +16,8 @@ func NewWorker() Worker {
 func (worker *Worker) Run(parallelizer *Parallelizer, myList *MyList) {
 	for {
 		request := parallelizer.NextRequest()
-		request.Execute(myList)
+		//request.Execute(myList)
 		parallelizer.Remove(request)
-		worker.ProcessNumber++
+		atomic.AddUint64(&worker.ProcessNumber, 1)
 	}
 }
