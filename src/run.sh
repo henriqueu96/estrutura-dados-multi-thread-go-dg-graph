@@ -1,26 +1,30 @@
 #!/bin/bash
 
+# 1 - quant threads
+# 2 - graph size limit
+# 3 - from 0 to 1 - prob of pairwise conflict
+# 5 - arbitrary processing time
+# 6 - repetitions
+# 7 - archive where you store results
+
+export GOPATH="/Users/henriqueurruth/Projects/tcc"
+
 declare -a ARRAY
 declare -a repetition
 
-export GOROOT='/usr/local/go'
-export GOPATH='/Users/henriqueurruth/Projects/tcc/'
-
-maximunOfThreadsIteration=$1
-parallelizerLimit=$2
-dependencyOdds=$3
-mylistLimit=$4
-maxRepetitionNumber=$5
-fileName=$6
+count=1
+pcount=1
+let range=$1+1
+let range2=$5+1
 index=0
-numberOfThreads=1
 
-while [ $numberOfThreads -le $maximunOfThreadsIteration ]; do
-	repetitionNumber=1
-	while [ $repetitionNumber -lt $maxRepetitionNumber ]; do
-		# shellcheck disable=SC2006
-		repetition[$repetitionNumber]=`go run main.go $numberOfThreads $parallelizerLimit $dependencyOdds $mylistLimit`
-		repetitionNumber=$repetitionNumber+1
+while [ $count -le $range ]; do
+
+	let count2=1
+
+	while [ $count2 -lt $range2 ]; do
+		repetition[$count2]=`go run main.go $count $2 $3 $4`
+		let count2=$count2+1
 	done
 
 	SIZER=${#repetition[@]}
@@ -35,20 +39,34 @@ while [ $numberOfThreads -le $maximunOfThreadsIteration ]; do
 
 	ARRAY[$index]=$value
 
-	if [ $numberOfThreads -eq 1 ]
+
+	if [ $count -eq 1 ]
 	then
-		let numberOfThreads=$numberOfThreads+1
+		let pcount=1
 	else
-		let numberOfThreads=$numberOfThreads+2
+		let pcount=2
 	fi
+
+	if [ $count -ge 12 ]
+	then
+		let pcount=4
+	fi
+
+	if [ $count -ge 16 ]
+	then
+		let pcount=8
+	fi
+
+	let count=$count+$pcount
 
 	let index=$index+1
 done
 
 ELEMENTS=${#ARRAY[@]}
 
+
 for (( i=0;i<$ELEMENTS;i++)); do
-    printf "${ARRAY[${i}]}" >> $fileName
-    printf "\n" >> $fileName
+    printf "${ARRAY[${i}]}" >> $6
+    printf "\n" >> $6
 done
 #print variable on a screen

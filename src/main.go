@@ -61,7 +61,7 @@ func showActivitie(){
 func measureMetrics(client *requests.Client, workers *[]*requests.Worker) {
 
 	var population uint64 = 0;
-	var populationAvarage float64 = 0;
+	// var populationAvarage float64 = 0;
 	for i := 0; i < 10; i++ {
 		workerProcessesNumber := uint64(0);
 		time.Sleep(3 * 1000000000);
@@ -72,7 +72,7 @@ func measureMetrics(client *requests.Client, workers *[]*requests.Worker) {
 		population += messagesNumber - workerProcessesNumber;
 	}
 
-	populationAvarage = float64(population) / 10
+	//populationAvarage = float64(population) / 10
 
 	processed := uint64(0);
 	for _, worker := range *workers {
@@ -80,7 +80,7 @@ func measureMetrics(client *requests.Client, workers *[]*requests.Worker) {
 	}
 	processedPerSecound := float64(processed) / 30
 
-	fmt.Print(floatToString(processedPerSecound) + " " +  floatToString(populationAvarage))
+	fmt.Print(floatToString(processedPerSecound)) //+ " " +  floatToString(populationAvarage)
 }
 
 func floatToString(input_num float64) string {
