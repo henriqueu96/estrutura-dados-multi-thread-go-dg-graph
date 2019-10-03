@@ -22,6 +22,7 @@ type dgNode struct {
 func newNode(request *DGRequest, nextNodeInManagementChannel *chan ManagementMessage) dgNode {
 	idIndex++;
 	chanIn := make(chan ManagementMessage, 30)
+
 	return dgNode{
 		id:                          idIndex,
 		request:                     request,
@@ -46,8 +47,9 @@ func (node *dgNode) start() error {
 }
 
 func newMethod(node *dgNode, message ManagementMessage) {
-/*	messageType := MessageTypes[message.messageType]
-	fmt.Println("Event:" + messageType + " " + node.ToString())*/
+
+	/*	messageType := MessageTypes[message.messageType]
+		fmt.Println("Event:" + messageType + " " + node.ToString())*/
 	switch message.messageType {
 	case enterNewNode:
 		if node.status == entering {
@@ -63,6 +65,7 @@ func newMethod(node *dgNode, message ManagementMessage) {
 		newNode := message.parameter.(*dgNode)
 
 		if node.request.isDependent(newNode.request) && node.status != leaving {
+
 			newlist := append(*node.dependentsChannelsList, newNode.inManagementChannel)
 			node.dependentsChannelsList = &newlist
 			*newNode.inManagementChannel <- NewManagementMessage(hasConflictMessage, nil)
