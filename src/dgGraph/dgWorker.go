@@ -23,6 +23,5 @@ func Work(node *dgNode) {
 	incrementProcessNumber()
 	fmt.Println("Event:Working Start " + node.ToString())
 	time.Sleep(10)
-	fmt.Println("Event: Working Done " + node.ToString())
 	*node.inManagementChannel <- NewManagementMessage(endFunc, nil);
 }

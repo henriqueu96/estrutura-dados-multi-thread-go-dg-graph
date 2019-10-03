@@ -21,7 +21,7 @@ type dgNode struct {
 
 func newNode(request *DGRequest, nextNodeInManagementChannel *chan ManagementMessage) dgNode {
 	idIndex++;
-	chanIn := make(chan ManagementMessage)
+	chanIn := make(chan ManagementMessage, 30)
 	return dgNode{
 		id:                          idIndex,
 		request:                     request,
@@ -41,13 +41,13 @@ func (node *dgNode) ToString() string {
 func (node *dgNode) start() error {
 	for {
 		message := <-*node.inManagementChannel
-		go newMethod(node, message)
+		newMethod(node, message)
 	}
 }
 
 func newMethod(node *dgNode, message ManagementMessage) {
-	messageType := MessageTypes[message.messageType]
-	fmt.Println("Event:" + messageType + " " + node.ToString())
+/*	messageType := MessageTypes[message.messageType]
+	fmt.Println("Event:" + messageType + " " + node.ToString())*/
 	switch message.messageType {
 	case enterNewNode:
 		if node.status == entering {
@@ -62,7 +62,7 @@ func newMethod(node *dgNode, message ManagementMessage) {
 	case newNodeAppeared:
 		newNode := message.parameter.(*dgNode)
 
-		if node.request.isDependent(newNode.request) {
+		if node.request.isDependent(newNode.request) && node.status != leaving {
 			newlist := append(*node.dependentsChannelsList, newNode.inManagementChannel)
 			node.dependentsChannelsList = &newlist
 			*newNode.inManagementChannel <- NewManagementMessage(hasConflictMessage, nil)
@@ -102,12 +102,11 @@ func newMethod(node *dgNode, message ManagementMessage) {
 	case endFunc:
 		node.status = leaving
 
-		depNubmer := len(*node.dependentsChannelsList)
-		fmt.Println("Event Free: " + strconv.Itoa(depNubmer))
+		/*depNubmer := len(*node.dependentsChannelsList)
+		fmt.Println("Event Free: " + strconv.Itoa(depNubmer))*/
 		for _, e := range *node.dependentsChannelsList {
 			*e <- NewManagementMessage(decreaseConflict, nil)
 		}
-
 	}
 }
 

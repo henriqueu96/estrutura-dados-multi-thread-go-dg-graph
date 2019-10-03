@@ -11,8 +11,7 @@ func NewDGClient() DGClient {
 }
 
 func (client DGClient) Run(parallelizer *dgGraph, preset []*DGRequest) {
-	i := 0
-	for {
+	for i := range preset{
 		request := preset[i]
 		parallelizer.add(request)
 		i++
