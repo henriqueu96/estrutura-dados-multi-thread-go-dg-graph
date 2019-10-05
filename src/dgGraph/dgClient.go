@@ -1,5 +1,7 @@
 package dgGraph
 
+import "fmt"
+
 type DGClient struct {
 	MessagesNumber uint64
 	inManagementChannel         *chan ManagementMessage
@@ -15,7 +17,7 @@ func NewDGClient() DGClient {
 
 
 func (client DGClient) Run(graph *dgGraph, preset []*DGRequest) {
-	go ReaderChan(client,graph)
+	go ReaderChan(&client,graph)
 	for i := range preset{
 		request := preset[i]
 		graph.add(request, client.inManagementChannel)
@@ -23,17 +25,19 @@ func (client DGClient) Run(graph *dgGraph, preset []*DGRequest) {
 	}
 }
 
-func  ReaderChan (client DGClient, graph *dgGraph){
+func  ReaderChan (client *DGClient, graph *dgGraph){
 			for {
 			message := <- *client.inManagementChannel
-			tratandoMessage(graph,message)
+			//tratandoMessage(graph,message)
+				newNode := message.parameter.(*dgNode)
+				switch message.messageType {
+				case leavingNode:
+					fmt.Println(newNode.status)//*graph.lastNodeInManagementChannel <- NewManagementMessage(leavingNode, newNode) // o erro ta aqui, mas não sei o que to fazendo errado
+				}
 		}
 
 }
 func tratandoMessage(graph *dgGraph,message ManagementMessage){
-	newNode := message.parameter.(*dgNode)
-	switch message.messageType {
-	case leavingNode:
-		graph.lastNodeInManagementChannel <- NewManagementMessage(leavingNode, newNode) // o erro ta aqui, mas não sei o que to fazendo errado
-	}
+
+
 }
