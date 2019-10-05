@@ -6,8 +6,8 @@ type dgGraph struct {
 	GraphLimit int
 }
 
-func (dgGraph *dgGraph) add(request *DGRequest) {
-	node := newNode(request, dgGraph.lastNodeInManagementChannel, dgGraph.lastNodeOutManagementChannel)
+func (dgGraph *dgGraph) add(request *DGRequest, clientManagementChannel *chan ManagementMessage) {
+	node := newNode(request, dgGraph.lastNodeInManagementChannel, dgGraph.lastNodeOutManagementChannel, clientManagementChannel)
 	dgGraph.lastNodeInManagementChannel = node.inManagementChannel
 	dgGraph.lastNodeOutManagementChannel = node.outManagementChannel
 	go node.start()

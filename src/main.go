@@ -34,7 +34,7 @@ func main() {
 	client := dgGraph.NewDGClient()
 	go client.Run(&graph, preset)
 
-	time.Sleep(time.Minute);
+	time.Sleep(10 *time.Minute);
 	//measureMetrics(&client)
 }
 
@@ -62,7 +62,7 @@ func getFloatArgument(index int) (float64, error) {
 
 func generatePreset(dependencyOdds float64, myListLimit int) (requests []*dgGraph.DGRequest) {
 	// todo: change to 16777216
-	for i := 0; i < 500; i++ {
+	for i := 0; i < 10000; i++ {
 		requests = append(requests, generateRequest(getRandonInt(myListLimit), dependencyOdds))
 	}
 	return requests
@@ -82,7 +82,7 @@ func measureMetrics(client *dgGraph.DGClient) {
 	var metric uint64 = 0;
 	for i := 0; i < 1; i++ {
 		var workerProcessesNumber uint64 = 0;
-		time.Sleep(100 * time.Microsecond);
+		time.Sleep(10 * time.Minute);
 		messagesNumber := client.MessagesNumber;
 		workerProcessesNumber += dgGraph.GetProcessNumber()
 		metric += messagesNumber - workerProcessesNumber;

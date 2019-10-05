@@ -1,7 +1,6 @@
 package dgGraph
 
 import (
-	"fmt"
 	"sync/atomic"
 	"time"
 )
@@ -21,7 +20,7 @@ func Work(node *dgNode) {
 	request := node.request
 	request.Execute(&myList)
 	incrementProcessNumber()
-	fmt.Println("Event:Working Start " + node.ToString())
-	time.Sleep(10)
+	//fmt.Println("Event:Working Start " + node.ToString())
+	time.Sleep(10 * time.Nanosecond)
 	*node.inManagementChannel <- NewManagementMessage(endFunc, nil);
 }

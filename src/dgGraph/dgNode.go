@@ -14,28 +14,30 @@ type dgNode struct {
 	dependenciesNumber       int
 	solvedDependenciesNumber int
 	// used to free the dependents
-	dependentsChannelsList      *[]*chan ManagementMessage
-	inManagementChannel         *chan ManagementMessage
-	outManagementChannel        *chan ManagementMessage
-	NextNodeInManagementChannel *chan ManagementMessage
+	dependentsChannelsList       *[]*chan ManagementMessage
+	inManagementChannel          *chan ManagementMessage
+	outManagementChannel         *chan ManagementMessage
+	NextNodeInManagementChannel  *chan ManagementMessage
 	NextNodeOutManagementChannel *chan ManagementMessage
+	ClientManagementChannel      *chan ManagementMessage
 }
 
-func newNode(request *DGRequest, nextNodeInManagementChannel *chan ManagementMessage,nextNodeOutManagementChannel *chan ManagementMessage) dgNode {
+func newNode(request *DGRequest, nextNodeInManagementChannel *chan ManagementMessage, nextNodeOutManagementChannel *chan ManagementMessage, clientManagementChannel *chan ManagementMessage) dgNode {
 	idIndex++;
 	chanIn := make(chan ManagementMessage, 30)
 	chanOut := make(chan ManagementMessage, 30)
 	return dgNode{
-		id:                          idIndex,
-		request:                     request,
-		dependenciesNumber:          0,
-		solvedDependenciesNumber:    0,
-		dependentsChannelsList:      &[]*chan ManagementMessage{},
-		inManagementChannel:         &chanIn,
-		outManagementChannel:        &chanOut,
-		NextNodeInManagementChannel: nextNodeInManagementChannel,
+		id:                           idIndex,
+		request:                      request,
+		dependenciesNumber:           0,
+		solvedDependenciesNumber:     0,
+		dependentsChannelsList:       &[]*chan ManagementMessage{},
+		inManagementChannel:          &chanIn,
+		outManagementChannel:         &chanOut,
+		NextNodeInManagementChannel:  nextNodeInManagementChannel,
 		NextNodeOutManagementChannel: nextNodeOutManagementChannel,
-		status:                      entering,
+		status:                       entering,
+		ClientManagementChannel:      clientManagementChannel,
 	}
 }
 
@@ -50,8 +52,8 @@ func (node *dgNode) start() {
 
 func newMethodOut(node *dgNode, message ManagementMessage) {
 
-	messageType := MessageTypes[message.messageType]
-		fmt.Println("Event:" + messageType + " " + node.ToString())
+	/*messageType := MessageTypes[message.messageType]
+	fmt.Println("Event:" + messageType + " " + node.ToString())*/
 	switch message.messageType {
 	case hasConflictMessage:
 		node.dependenciesNumber++
@@ -77,8 +79,8 @@ func newMethodOut(node *dgNode, message ManagementMessage) {
 
 func newMethodIn(node *dgNode, message ManagementMessage) {
 
-	messageType := MessageTypes[message.messageType]
-		fmt.Println("Event:" + messageType + " " + node.ToString())
+	/*messageType := MessageTypes[message.messageType]
+	fmt.Println("Event:" + messageType + " " + node.ToString())*/
 	switch message.messageType {
 	case enterNewNode:
 		if node.status == entering {
@@ -116,11 +118,12 @@ func newMethodIn(node *dgNode, message ManagementMessage) {
 	case endFunc:
 		node.status = leaving
 
-		depNubmer := len(*node.dependentsChannelsList)
-		fmt.Println("Event Free: " + strconv.Itoa(depNubmer))
+		/*depNubmer := len(*node.dependentsChannelsList)
+		fmt.Println("Event Free: " + strconv.Itoa(depNubmer))*/
 		for _, e := range *node.dependentsChannelsList {
 			*e <- NewManagementMessage(decreaseConflict, nil)
 		}
+		fmt.Println(node.id)
 	}
 }
 
@@ -128,14 +131,14 @@ func (node *dgNode) IsRedyToGo() bool {
 	return node.status == waiting && node.dependenciesNumber == node.solvedDependenciesNumber
 }
 
-func (node *dgNode) StartIn () {
+func (node *dgNode) StartIn() {
 	for {
 		message := <-*node.inManagementChannel
 		newMethodIn(node, message)
 	}
 }
 
-func (node *dgNode) StartOut () {
+func (node *dgNode) StartOut() {
 	for {
 		message := <-*node.outManagementChannel
 		newMethodOut(node, message)
