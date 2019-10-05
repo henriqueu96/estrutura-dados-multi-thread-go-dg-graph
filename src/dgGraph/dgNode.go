@@ -14,30 +14,28 @@ type dgNode struct {
 	dependenciesNumber       int
 	solvedDependenciesNumber int
 	// used to free the dependents
-	dependentsChannelsList       *[]*chan ManagementMessage
-	inManagementChannel          *chan ManagementMessage
-	outManagementChannel         *chan ManagementMessage
-	NextNodeInManagementChannel  *chan ManagementMessage
-	NextNodeOutManagementChannel *chan ManagementMessage
-	ClientManagementChannel      *chan ManagementMessage
+	dependentsChannelsList      *[]*chan ManagementMessage
+	inManagementChannel         *chan ManagementMessage
+	outManagementChannel        *chan ManagementMessage
+	NextNodeInManagementChannel *chan ManagementMessage
+	ClientManagementChannel     *chan ManagementMessage
 }
 
-func newNode(request *DGRequest, nextNodeInManagementChannel *chan ManagementMessage, nextNodeOutManagementChannel *chan ManagementMessage, clientManagementChannel *chan ManagementMessage) dgNode {
+func newNode(request *DGRequest, nextNodeInManagementChannel *chan ManagementMessage, clientManagementChannel *chan ManagementMessage) dgNode {
 	idIndex++;
 	chanIn := make(chan ManagementMessage, 30)
 	chanOut := make(chan ManagementMessage, 30)
 	return dgNode{
-		id:                           idIndex,
-		request:                      request,
-		dependenciesNumber:           0,
-		solvedDependenciesNumber:     0,
-		dependentsChannelsList:       &[]*chan ManagementMessage{},
-		inManagementChannel:          &chanIn,
-		outManagementChannel:         &chanOut,
-		NextNodeInManagementChannel:  nextNodeInManagementChannel,
-		NextNodeOutManagementChannel: nextNodeOutManagementChannel,
-		status:                       entering,
-		ClientManagementChannel:      clientManagementChannel,
+		id:                          idIndex,
+		request:                     request,
+		dependenciesNumber:          0,
+		solvedDependenciesNumber:    0,
+		dependentsChannelsList:      &[]*chan ManagementMessage{},
+		inManagementChannel:         &chanIn,
+		outManagementChannel:        &chanOut,
+		NextNodeInManagementChannel: nextNodeInManagementChannel,
+		status:                      entering,
+		ClientManagementChannel:     clientManagementChannel,
 	}
 }
 
@@ -108,12 +106,17 @@ func newMethodIn(node *dgNode, message ManagementMessage) {
 			*node.NextNodeInManagementChannel <- NewManagementMessage(newNodeAppeared, newNode)
 		}
 
-		/*
-			if DELETED nao
-			deve
-			fazer
-			nada ...
-		*/
+	case leavingNode:
+		newNode := message.parameter.(*dgNode)
+		if node.NextNodeInManagementChannel == newNode.inManagementChannel {
+			node.NextNodeInManagementChannel = newNode.NextNodeInManagementChannel
+		}
+		if node.inManagementChannel == newNode.inManagementChannel {
+			//se deleta, não sei como fazer pra terminar as goRoutines
+		}
+		if node.NextNodeInManagementChannel != newNode.NextNodeInManagementChannel {
+			*node.NextNodeInManagementChannel <- NewManagementMessage(leavingNode, newNode)
+		}
 
 	case endFunc:
 		node.status = leaving
@@ -123,6 +126,8 @@ func newMethodIn(node *dgNode, message ManagementMessage) {
 		for _, e := range *node.dependentsChannelsList {
 			*e <- NewManagementMessage(decreaseConflict, nil)
 		}
+		*node.ClientManagementChannel <- NewManagementMessage(leavingNode, &node)
+
 		fmt.Println(node.id)
 	}
 }

@@ -2,14 +2,13 @@ package dgGraph
 
 type dgGraph struct {
 	lastNodeInManagementChannel *chan ManagementMessage
-	lastNodeOutManagementChannel *chan ManagementMessage
+	//lastNodeOutManagementChannel *chan ManagementMessage
 	GraphLimit int
 }
 
 func (dgGraph *dgGraph) add(request *DGRequest, clientManagementChannel *chan ManagementMessage) {
-	node := newNode(request, dgGraph.lastNodeInManagementChannel, dgGraph.lastNodeOutManagementChannel, clientManagementChannel)
+	node := newNode(request, dgGraph.lastNodeInManagementChannel, clientManagementChannel)
 	dgGraph.lastNodeInManagementChannel = node.inManagementChannel
-	dgGraph.lastNodeOutManagementChannel = node.outManagementChannel
 	go node.start()
 	*node.inManagementChannel <- NewManagementMessage(enterNewNode, &node)
 }

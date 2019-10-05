@@ -21,6 +21,7 @@ const (
 	endsConflictMessage ManagementMessageType = "endsConflictMessage" // nodo mais antigo avisa que terminou as mensagens de conflito
 	decreaseConflict    ManagementMessageType = "decreaseConflict" // decrementa um conflito
 	endFunc             ManagementMessageType = "endFunc" // termina execução
+	leavingNode ManagementMessageType = "leavingNode" // nodo pedindo pra sair
 )
 
 
@@ -31,5 +32,6 @@ var MessageTypes = map[ManagementMessageType] string{
 	endsConflictMessage:    "endsConflictMessage",
 	decreaseConflict:    "decreaseConflict",
 	endFunc:    "endFunc",
+	leavingNode: "leavingNode",
 }
 
