@@ -7,7 +7,7 @@ type dgGraph struct {
 }
 
 func (dgGraph *dgGraph) add(request *DGRequest, clientManagementChannel *chan ManagementMessage) {
-	node := newNode(request, dgGraph.lastNodeInManagementChannel, clientManagementChannel)
+	node := newNode(request, dgGraph.lastNodeInManagementChannel, clientManagementChannel, dgGraph)
 	dgGraph.lastNodeInManagementChannel = node.inManagementChannel
 	go node.start()
 	*node.inManagementChannel <- NewManagementMessage(enterNewNode, &node)

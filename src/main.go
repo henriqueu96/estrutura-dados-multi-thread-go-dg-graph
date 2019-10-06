@@ -61,8 +61,7 @@ func getFloatArgument(index int) (float64, error) {
 }
 
 func generatePreset(dependencyOdds float64, myListLimit int) (requests []*dgGraph.DGRequest) {
-	// todo: change to 16777216
-	for i := 0; i < 10000; i++ {
+	for i := 0; i < 100000; i++ {
 		requests = append(requests, generateRequest(getRandonInt(myListLimit), dependencyOdds))
 	}
 	return requests
