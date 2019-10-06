@@ -106,18 +106,6 @@ func newMethodIn(node *dgNode, message ManagementMessage) {
 			*node.NextNodeInManagementChannel <- NewManagementMessage(newNodeAppeared, newNode)
 		}
 
-	case leavingNode:
-		newNode := message.parameter.(*dgNode)
-		if node.NextNodeInManagementChannel == newNode.inManagementChannel {
-			node.NextNodeInManagementChannel = newNode.NextNodeInManagementChannel
-		}
-		if node.inManagementChannel == newNode.inManagementChannel {
-			//se deleta, não sei como fazer pra terminar as goRoutines
-		}
-		if node.NextNodeInManagementChannel != newNode.NextNodeInManagementChannel {
-			*node.NextNodeInManagementChannel <- NewManagementMessage(leavingNode, newNode)
-		}
-
 	case endFunc:
 		node.status = leaving
 
@@ -129,6 +117,20 @@ func newMethodIn(node *dgNode, message ManagementMessage) {
 		*node.ClientManagementChannel <- NewManagementMessage(leavingNode, &node)
 
 		fmt.Println(node.id)
+
+	case leavingNode:
+		newNode := message.parameter.(*dgNode)
+		if node.NextNodeInManagementChannel == newNode.inManagementChannel {
+			node.NextNodeInManagementChannel = newNode.NextNodeInManagementChannel
+		}
+		if node.inManagementChannel == newNode.inManagementChannel {
+			if node.NextNodeInManagementChannel == newNode.NextNodeInManagementChannel{
+				//se deleta, não sei como fazer pra terminar as goRoutines
+			}
+		}
+		if node.NextNodeInManagementChannel != newNode.inManagementChannel {
+			*node.NextNodeInManagementChannel <- NewManagementMessage(leavingNode, newNode)
+		}
 	}
 }
 

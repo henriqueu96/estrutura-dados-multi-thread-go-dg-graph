@@ -39,7 +39,8 @@ ToDo: verificar o pq nos primeiros nodos esta ficando fora de ordem
 
 -> criar uma nova mensagem de deletando entre os nodos - passando o nodo em si e verificando o canal In se é o mesmo canal do nodo seguinte. Sendo igual altera pelo canal NextNodoIn.
 
-ToDo: Precisamos tratar caso a mensagem de saida do nodo posterior_do_posterior chegar antes da mensagem do posterior)
+ToDo: Precisamos tratar caso a mensagem de saida do nodo posterior_do_posterior chegar antes da mensagem do posterior) - acho que ja consegui contornar isso, só temos que testa
 
-ToDo: criar um novo status para após a mensagem de deletando ser enviada
+
+
 
