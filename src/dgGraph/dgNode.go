@@ -1,7 +1,6 @@
 package dgGraph
 
 import (
-	"fmt"
 	"strconv"
 )
 
@@ -53,8 +52,8 @@ func (node *dgNode) start() {
 
 func newMethodOut(node *dgNode, message ManagementMessage) {
 
-	messageType := MessageTypes[message.messageType]
-	fmt.Println("Event:" + messageType + " " + node.ToString())
+	//messageType := MessageTypes[message.messageType]
+	//fmt.Println("Event:" + messageType + " " + node.ToString())
 	switch message.messageType {
 	case hasConflictMessage:
 		node.dependenciesNumber++
@@ -79,8 +78,8 @@ func newMethodOut(node *dgNode, message ManagementMessage) {
 }
 
 func newMethodIn(node *dgNode, message ManagementMessage) {
-	messageType := MessageTypes[message.messageType]
-	fmt.Println("Event:" + messageType + " " + node.ToString())
+	//messageType := MessageTypes[message.messageType]
+	//fmt.Println("Event:" + messageType + " " + node.ToString())
 	switch message.messageType {
 	case enterNewNode:
 		if node.status == entering {
