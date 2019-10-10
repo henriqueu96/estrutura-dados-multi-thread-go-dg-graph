@@ -19,7 +19,7 @@ func (client DGClient) Run(graph *dgGraph, preset []*DGRequest) {
 	go ReaderChan(&client, graph)
 	for i := range preset {
 		request := preset[i]
-		time.Sleep(10 * time.Nanosecond)
+		time.Sleep(200 * time.Nanosecond)
 		graph.add(request, client.inManagementChannel)
 		i++
 	}
