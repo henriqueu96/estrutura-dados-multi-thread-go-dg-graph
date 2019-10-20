@@ -127,12 +127,12 @@ func newMethodIn(node *dgNode, message ManagementMessage) {
 			return
 		}
 		if node.IsNextNode(theLeavingNode) {
-			*node.NextNodeInManagementChannel <- NewManagementMessage(wantToDelete, node)
+			*node.NextNodeInManagementChannel <- NewManagementMessage(wantToDelete, node.WantManagementChannel)
 			for node.ShouldContinue {
-				message := <-*node.outManagementChannel
+				message := <-*node.WantManagementChannel
 				if message.parameter != nil{
-					nodeDelete := message.parameter.(*dgNode)
-					node.NextNodeInManagementChannel = nodeDelete.NextNodeInManagementChannel
+					nodeDelete := message.parameter.(*chan ManagementMessage)
+					node.NextNodeInManagementChannel = nodeDelete
 				}
 				return
 			}
@@ -153,8 +153,8 @@ func newMethodIn(node *dgNode, message ManagementMessage) {
 
 		}
 	case wantToDelete:
-		newNode := message.parameter.(*dgNode)
-		*newNode.WantManagementChannel <- NewManagementMessage(wantToDelete, node)
+		newNode := message.parameter.(*chan ManagementMessage)
+		*newNode <- NewManagementMessage(wantToDelete, node.NextNodeInManagementChannel)
 	}
 
 }
