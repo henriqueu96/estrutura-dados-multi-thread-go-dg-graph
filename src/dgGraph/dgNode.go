@@ -56,9 +56,6 @@ func (node *dgNode) start() {
 }
 
 func newMethodOut(node *dgNode, message ManagementMessage) {
-
-	messageType := MessageTypes[message.messageType]
-	fmt.Println("Event:" + messageType + " " + node.ToString())
 	switch message.messageType {
 	case hasConflictMessage:
 		node.dependenciesNumber++
@@ -85,8 +82,6 @@ func newMethodOut(node *dgNode, message ManagementMessage) {
 var addRemoveSequencialy = sync.Mutex{}
 
 func newMethodIn(node *dgNode, message ManagementMessage) {
-	messageType := MessageTypes[message.messageType]
-	fmt.Println("Event:" + messageType + " " + node.ToString())
 	switch message.messageType {
 	case enterNewNode:
 		if node.status == entering {
@@ -122,7 +117,6 @@ func newMethodIn(node *dgNode, message ManagementMessage) {
 
 	case leavingNode:
 		theLeavingNode := message.parameter.(*dgNode)
-		//fmt.Println(node.IsNextNode(theLeavingNode))
 		if theLeavingNode == node {
 			node.ShouldContinue = false
 			*node.outManagementChannel <- NewManagementMessage(leavingNode, nil)
@@ -164,10 +158,6 @@ func (node *dgNode) StartIn() {
 		message := <-*node.inManagementChannel
 		newMethodIn(node, message)
 	}
-	if node.graph.lastNodeInManagementChannel == node.inManagementChannel {
-		node.graph.setNextNodeInManagmentChanel(node.NextNodeInManagementChannel)
-	}
-	fmt.Println("Event:Leaving in -------------------------------------------------" + node.ToString())
 }
 
 func (node *dgNode) StartOut() {
@@ -175,5 +165,9 @@ func (node *dgNode) StartOut() {
 		message := <-*node.outManagementChannel
 		newMethodOut(node, message)
 	}
-	fmt.Println("Event:Leaving ou -------------------------------------------------t" + node.ToString())
+
+	if node.graph.lastNodeInManagementChannel == node.inManagementChannel {
+		*node.graph.RemoveChannel <- NewManagementMessage(leavingNode, node.NextNodeInManagementChannel)
+	}
+	fmt.Println("Leaving" + node.ToString())
 }

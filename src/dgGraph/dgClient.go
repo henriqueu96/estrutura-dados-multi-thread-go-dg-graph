@@ -1,5 +1,7 @@
 package dgGraph
 
+import "time"
+
 type DGClient struct {
 	MessagesNumber      uint64
 	inManagementChannel *chan ManagementMessage
@@ -14,10 +16,12 @@ func NewDGClient() DGClient {
 }
 
 func (client DGClient) Run(graph *dgGraph, preset []*DGRequest) {
+	go graph.Start(&client)
 	go ReaderChan(&client, graph)
 	for i := range preset {
 		request := preset[i]
-		graph.add(request, client.inManagementChannel)
+		time.Sleep(time.Nanosecond * 5)
+		*graph.AddChannel <- NewManagementMessage(enterNewNode, request)
 		i++
 	}
 }
