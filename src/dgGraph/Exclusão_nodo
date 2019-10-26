@@ -43,4 +43,5 @@ ToDo: Precisamos tratar caso a mensagem de saida do nodo posterior_do_posterior 
 
 
 
-
+todo: o problema esta no cliente, quando o primeiro nodo se deleta.
+todo: tbm te mque corrigir o ponto em que o nodo ta enviando msg pra ele mesmo

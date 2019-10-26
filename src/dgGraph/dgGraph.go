@@ -1,9 +1,12 @@
 package dgGraph
 
+import "fmt"
+
 type dgGraph struct {
 	AddChannel                  *chan ManagementMessage
 	lastNodeInManagementChannel *chan ManagementMessage
 	RemoveChannel               *chan ManagementMessage
+	WantDeleteChannel 			*chan ManagementMessage
 	GraphLimit                  int
 	Client DGClient
 }
@@ -11,11 +14,13 @@ type dgGraph struct {
 func NewGraph(graphLimit int) dgGraph {
 	add := make(chan ManagementMessage)
 	remove := make(chan ManagementMessage)
+	delete := make(chan ManagementMessage)
 	return dgGraph{
 		GraphLimit:                  graphLimit,
 		lastNodeInManagementChannel: nil,
 		AddChannel:                  &add,
 		RemoveChannel:                  &remove,
+		WantDeleteChannel: &delete,
 	}
 }
 
@@ -23,7 +28,13 @@ func (dgGraph *dgGraph) add(request *DGRequest, clientManagementChannel *chan Ma
 	node := newNode(request, dgGraph.lastNodeInManagementChannel, clientManagementChannel, dgGraph)
 	dgGraph.lastNodeInManagementChannel = node.inManagementChannel
 	go node.start()
-	*node.inManagementChannel <- NewManagementMessage(enterNewNode, &node)
+	if (*dgGraph.lastNodeInManagementChannel == nil) {
+		node.status = ready
+		go Work(&node)
+
+	}
+	fmt.Println("Event:" + "enterNewNode" + " " + node.ToString())
+	*dgGraph.lastNodeInManagementChannel <- NewManagementMessage(newNodeAppeared, &node)
 }
 
 func (graph *dgGraph) Start(client *DGClient) {

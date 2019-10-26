@@ -29,10 +29,26 @@ func (client DGClient) Run(graph *dgGraph, preset []*DGRequest) {
 func ReaderChan(client *DGClient, graph *dgGraph) {
 	for {
 		message := <-*client.inManagementChannel
-		newNode := message.parameter.(*dgNode)
+		theLeavingNode := message.parameter.(*dgNode)
 		switch message.messageType {
 		case leavingNode:
 			*graph.lastNodeInManagementChannel <- NewManagementMessage(leavingNode, newNode)
+		}
+		if (graph.lastNodeInManagementChannel == theLeavingNode.inManagementChannel) {
+			*graph.lastNodeInManagementChannel <- NewManagementMessage(wantToDelete, graph.WantDeleteChannel)
+			for  {
+				message := <- *graph.WantDeleteChannel
+				if message.parameter != nil{
+					nodeDelete := message.parameter.(*dgNode)
+					graph.lastNodeInManagementChannel = nodeDelete.NextNodeInManagementChannel
+					*nodeDelete.inManagementChannel <- NewManagementMessage(leavingNode, nodeDelete)
+				}
+				return
+			}
+		} else {
+			if (graph.lastNodeInManagementChannel != nil) {
+				*graph.lastNodeInManagementChannel <- NewManagementMessage(leavingNode, theLeavingNode)
+			}
 		}
 	}
 }
