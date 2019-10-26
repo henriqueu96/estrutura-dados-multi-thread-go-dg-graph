@@ -175,8 +175,10 @@ func (node *dgNode) StartOut() {
 		newMethodOut(node, message)
 	}
 
-	if node.graph.lastNodeInManagementChannel == node.inManagementChannel {
-		*node.graph.RemoveChannel <- NewManagementMessage(leavingNode, node.NextNodeInManagementChannel)
-	}
-	//fmt.Println("Leaving" + node.ToString())
+	//if node.graph.lastNodeInManagementChannel == node.inManagementChannel {
+	//	*node.graph.RemoveChannel <- NewManagementMessage(leavingNode, node.NextNodeInManagementChannel)
+	//}
+	if(GetPrint()){
+	fmt.Println("Leaving" + node.ToString())}
+	incrementProcessNumber()
 }

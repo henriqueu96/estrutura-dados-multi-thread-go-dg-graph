@@ -55,5 +55,5 @@ func (graph *dgGraph) Start(client *DGClient) {
 }
 
 func GetPrint() bool {
-	return false
+	return true
 }

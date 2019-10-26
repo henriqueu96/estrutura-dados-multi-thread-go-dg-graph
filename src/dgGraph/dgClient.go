@@ -33,7 +33,7 @@ func ReaderChan(client *DGClient, graph *dgGraph) {
 		switch message.messageType {
 		case leavingNode:
 			if (graph.lastNodeInManagementChannel == theLeavingNode.inManagementChannel) {
-				*graph.lastNodeInManagementChannel <- NewManagementMessage(wantToDelete, graph.WantDeleteChannel)
+				*theLeavingNode.inManagementChannel <- NewManagementMessage(wantToDelete, graph.WantDeleteChannel)
 				for {
 					message := <-*graph.WantDeleteChannel
 					if message.parameter != nil {
@@ -44,9 +44,9 @@ func ReaderChan(client *DGClient, graph *dgGraph) {
 					return
 				}
 			} else {
-				if (graph.lastNodeInManagementChannel != nil) {
+				//if (graph.lastNodeInManagementChannel != nil) {
 					*graph.lastNodeInManagementChannel <- NewManagementMessage(leavingNode, theLeavingNode)
-				}
+
 			}
 		}
 	}
