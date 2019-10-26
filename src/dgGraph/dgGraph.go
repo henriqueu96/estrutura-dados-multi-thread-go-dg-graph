@@ -26,15 +26,17 @@ func NewGraph(graphLimit int) dgGraph {
 
 func (dgGraph *dgGraph) add(request *DGRequest, clientManagementChannel *chan ManagementMessage) {
 	node := newNode(request, dgGraph.lastNodeInManagementChannel, clientManagementChannel, dgGraph)
-	dgGraph.lastNodeInManagementChannel = node.inManagementChannel
-	go node.start()
-	if (*dgGraph.lastNodeInManagementChannel == nil) {
+	node.start()
+	if(GetPrint()){
+		fmt.Println("Event:" + "enterNewNode" + " " + node.ToString())
+	}
+	if (node.NextNodeInManagementChannel == nil) {
 		node.status = ready
 		go Work(&node)
-
+	}else{
+		*dgGraph.lastNodeInManagementChannel <- NewManagementMessage(newNodeAppeared, &node)
 	}
-	fmt.Println("Event:" + "enterNewNode" + " " + node.ToString())
-	*dgGraph.lastNodeInManagementChannel <- NewManagementMessage(newNodeAppeared, &node)
+	dgGraph.lastNodeInManagementChannel = node.inManagementChannel
 }
 
 func (graph *dgGraph) Start(client *DGClient) {
@@ -50,4 +52,8 @@ func (graph *dgGraph) Start(client *DGClient) {
 			graph.lastNodeInManagementChannel = updatedLastInManagementChannel
 		}
 	}
+}
+
+func GetPrint() bool {
+	return false
 }

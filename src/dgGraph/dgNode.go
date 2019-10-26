@@ -56,8 +56,10 @@ func (node *dgNode) start() {
 }
 
 func newMethodOut(node *dgNode, message ManagementMessage) {
-	messageType := MessageTypes[message.messageType]
-	fmt.Println("Event:" + messageType + " " + node.ToString())
+	if(GetPrint()){
+		messageType := MessageTypes[message.messageType]
+		fmt.Println("Event:" + messageType + " " + node.ToString())
+	}
 	switch message.messageType {
 	case hasConflictMessage:
 		node.dependenciesNumber++
@@ -84,9 +86,11 @@ func newMethodOut(node *dgNode, message ManagementMessage) {
 var addRemoveSequencialy = sync.Mutex{}
 
 func newMethodIn(node *dgNode, message ManagementMessage) {
-	messageType := MessageTypes[message.messageType]
-	fmt.Println("Event:" + messageType + " " + node.ToString())
 
+	if(GetPrint()){
+		messageType := MessageTypes[message.messageType]
+		fmt.Println("Event:" + messageType + " " + node.ToString())
+	}
 	switch message.messageType {
 	case enterNewNode:
 		if node.status == entering {
@@ -174,5 +178,5 @@ func (node *dgNode) StartOut() {
 	if node.graph.lastNodeInManagementChannel == node.inManagementChannel {
 		*node.graph.RemoveChannel <- NewManagementMessage(leavingNode, node.NextNodeInManagementChannel)
 	}
-	fmt.Println("Leaving" + node.ToString())
+	//fmt.Println("Leaving" + node.ToString())
 }

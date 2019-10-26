@@ -32,22 +32,21 @@ func ReaderChan(client *DGClient, graph *dgGraph) {
 		theLeavingNode := message.parameter.(*dgNode)
 		switch message.messageType {
 		case leavingNode:
-			*graph.lastNodeInManagementChannel <- NewManagementMessage(leavingNode, newNode)
-		}
-		if (graph.lastNodeInManagementChannel == theLeavingNode.inManagementChannel) {
-			*graph.lastNodeInManagementChannel <- NewManagementMessage(wantToDelete, graph.WantDeleteChannel)
-			for  {
-				message := <- *graph.WantDeleteChannel
-				if message.parameter != nil{
-					nodeDelete := message.parameter.(*dgNode)
-					graph.lastNodeInManagementChannel = nodeDelete.NextNodeInManagementChannel
-					*nodeDelete.inManagementChannel <- NewManagementMessage(leavingNode, nodeDelete)
+			if (graph.lastNodeInManagementChannel == theLeavingNode.inManagementChannel) {
+				*graph.lastNodeInManagementChannel <- NewManagementMessage(wantToDelete, graph.WantDeleteChannel)
+				for {
+					message := <-*graph.WantDeleteChannel
+					if message.parameter != nil {
+						nodeDelete := message.parameter.(*dgNode)
+						graph.lastNodeInManagementChannel = nodeDelete.NextNodeInManagementChannel
+						*nodeDelete.inManagementChannel <- NewManagementMessage(leavingNode, nodeDelete)
+					}
+					return
 				}
-				return
-			}
-		} else {
-			if (graph.lastNodeInManagementChannel != nil) {
-				*graph.lastNodeInManagementChannel <- NewManagementMessage(leavingNode, theLeavingNode)
+			} else {
+				if (graph.lastNodeInManagementChannel != nil) {
+					*graph.lastNodeInManagementChannel <- NewManagementMessage(leavingNode, theLeavingNode)
+				}
 			}
 		}
 	}
