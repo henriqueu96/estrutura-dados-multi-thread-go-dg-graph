@@ -53,8 +53,10 @@ func verificacaoSaida(message ManagementMessage, graph *dgGraph) {
 				*graph.RemoveChannel <- NewManagementMessage(leavingNode, theLeavingNode.NextNodeInManagementChannel)
 			}
 		} else {
+			if *graph.lastNodeInManagementChannel != nil{
+				*graph.lastNodeInManagementChannel <- NewManagementMessage(leavingNode, theLeavingNode) // explodiu erro aqui - chan = nil
+			}
 
-			*graph.lastNodeInManagementChannel <- NewManagementMessage(leavingNode, theLeavingNode) // explodiu erro aqui - chan = nil
 		}
 
 	}
