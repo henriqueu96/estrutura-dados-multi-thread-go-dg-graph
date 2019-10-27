@@ -56,7 +56,7 @@ func (node *dgNode) start() {
 }
 
 func newMethodOut(node *dgNode, message ManagementMessage) {
-	if(GetPrint()){
+	if (GetPrint()) {
 		messageType := MessageTypes[message.messageType]
 		fmt.Println("Event:" + messageType + " " + node.ToString())
 	}
@@ -87,9 +87,10 @@ var addRemoveSequencialy = sync.Mutex{}
 
 func newMethodIn(node *dgNode, message ManagementMessage) {
 
-	if(GetPrint()){
+	if (GetPrint()) {
 		messageType := MessageTypes[message.messageType]
 		fmt.Println("Event:" + messageType + " " + node.ToString())
+
 	}
 	switch message.messageType {
 	case enterNewNode:
@@ -98,9 +99,11 @@ func newMethodIn(node *dgNode, message ManagementMessage) {
 				node.status = ready
 				go Work(node)
 			} else {
+				fmt.Println("Event Send: newNodeAppeared ....." + node.ToString())
 				*node.NextNodeInManagementChannel <- NewManagementMessage(newNodeAppeared, node)
 			}
 		}
+
 	case newNodeAppeared:
 		newNode := message.parameter.(*dgNode)
 
@@ -134,18 +137,18 @@ func newMethodIn(node *dgNode, message ManagementMessage) {
 		if node.IsNextNode(theLeavingNode) {
 			*node.NextNodeInManagementChannel <- NewManagementMessage(wantToDelete, node.WantManagementChannel)
 			for node.ShouldContinue {
-				message := <- *node.WantManagementChannel
-				if message.parameter != nil{
+				message := <-*node.WantManagementChannel
+				//if message.parameter != nil {
 					nodeDelete := message.parameter.(*dgNode)
 					node.NextNodeInManagementChannel = nodeDelete.NextNodeInManagementChannel
 					*nodeDelete.inManagementChannel <- NewManagementMessage(leavingNode, nodeDelete)
-				}
+				//}
 				return
 			}
 		} else {
-			if (node.NextNodeInManagementChannel != nil) {
+			//if (node.NextNodeInManagementChannel != nil) {
 				*node.NextNodeInManagementChannel <- NewManagementMessage(leavingNode, theLeavingNode)
-			}
+			//}
 		}
 	case wantToDelete:
 		wantManagementChannel := message.parameter.(*chan ManagementMessage)
@@ -178,7 +181,8 @@ func (node *dgNode) StartOut() {
 	//if node.graph.lastNodeInManagementChannel == node.inManagementChannel {
 	//	*node.graph.RemoveChannel <- NewManagementMessage(leavingNode, node.NextNodeInManagementChannel)
 	//}
-	if(GetPrint()){
-	fmt.Println("Leaving" + node.ToString())}
+	if (GetPrint()) {
+		fmt.Println("Leaving" + node.ToString())
+	}
 	incrementProcessNumber()
 }

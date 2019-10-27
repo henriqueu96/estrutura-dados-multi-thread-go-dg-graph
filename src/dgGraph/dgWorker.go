@@ -19,10 +19,9 @@ func GetProcessNumber() uint64 {
 func Work(node *dgNode) {
 	request := node.request
 	request.Execute(&myList)
-	if(GetPrint()){
+	if (GetPrint()) {
 		fmt.Println("Event:Working Start " + node.ToString())
 	}
 	//time.Sleep(time.Second)
 	*node.inManagementChannel <- NewManagementMessage(endFunc, nil);
-	//incrementProcessNumber()
 }

@@ -18,7 +18,6 @@ var args = os.Args
 
 func main() {
 
-
 	if len(args) < 4 {
 		println("Seems like you are missing args!")
 		return
@@ -34,9 +33,10 @@ func main() {
 	preset := generatePreset(dependencyOdds, mylistLimit)
 	client := dgGraph.NewDGClient()
 	go client.Run(&graph, preset)
-fmt.Println("entrou no sleep")
-	time.Sleep(1 *time.Minute);
 
+	fmt.Println("entrou no sleep")
+
+	time.Sleep(10 * time.Minute)
 	fmt.Print(dgGraph.GetProcessNumber())
 
 	//measureMetrics(&client)
@@ -65,7 +65,7 @@ func getFloatArgument(index int) (float64, error) {
 }
 
 func generatePreset(dependencyOdds float64, myListLimit int) (requests []*dgGraph.DGRequest) {
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 1000000; i++ {
 		requests = append(requests, generateRequest(getRandonInt(myListLimit), dependencyOdds))
 	}
 	return requests
