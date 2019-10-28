@@ -29,7 +29,7 @@ func main() {
 	mylistLimit, _ := getIntArgument(4)
 	runtime.GOMAXPROCS(threadsNumber)
 
-	graph := dgGraph.NewGraph(graphLimit)
+	graph := dgGraph.NewGraph(uint64(graphLimit))
 	preset := generatePreset(dependencyOdds, mylistLimit)
 	client := dgGraph.NewDGClient()
 	go client.Run(&graph, preset)

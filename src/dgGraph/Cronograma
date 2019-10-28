@@ -1,0 +1,5 @@
+ToDo: corrigir o erro que esta dando quando não tem tempo no worker, quando tem tempo maior que 10 milisegundos o graph se comporta corretamente;
+ToDo: terminar de implementar o limite no graph, não consegui fazer com que ele decrementasse do contador que eu coloquei;
+ToDo: Corrigir o contador de população media do graph;
+ToDo: criar os scripts pra leitura dos dados;
+ToDo: e terminou essa merda! É us guri!

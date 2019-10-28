@@ -6,12 +6,13 @@ type dgGraph struct {
 	AddChannel                  *chan ManagementMessage
 	lastNodeInManagementChannel *chan ManagementMessage
 	RemoveChannel               *chan ManagementMessage
-	WantDeleteChannel 			*chan ManagementMessage
-	GraphLimit                  int
-	Client DGClient
+	WantDeleteChannel           *chan ManagementMessage
+	GraphLimit                  uint64
+	Client                      DGClient
+	Population                  uint64
 }
 
-func NewGraph(graphLimit int) dgGraph {
+func NewGraph(graphLimit uint64) dgGraph {
 	add := make(chan ManagementMessage)
 	remove := make(chan ManagementMessage)
 	delete := make(chan ManagementMessage)
@@ -19,39 +20,50 @@ func NewGraph(graphLimit int) dgGraph {
 		GraphLimit:                  graphLimit,
 		lastNodeInManagementChannel: nil,
 		AddChannel:                  &add,
-		RemoveChannel:                  &remove,
-		WantDeleteChannel: &delete,
+		RemoveChannel:               &remove,
+		WantDeleteChannel:           &delete,
+		Population:                  0,
 	}
 }
 
 func (dgGraph *dgGraph) add(request *DGRequest, clientManagementChannel *chan ManagementMessage) {
 	node := newNode(request, dgGraph.lastNodeInManagementChannel, clientManagementChannel, dgGraph)
 	node.start()
-	if(GetPrint()){
+	if (GetPrint()) {
 		fmt.Println("Event:" + "enterNewNode" + " " + node.ToString())
 	}
 	if (node.NextNodeInManagementChannel == nil) {
 		node.status = ready
 		go Work(&node)
-	}else{
+	} else {
 		*dgGraph.lastNodeInManagementChannel <- NewManagementMessage(newNodeAppeared, &node)
 	}
+
 	dgGraph.lastNodeInManagementChannel = node.inManagementChannel
 }
 
 func (graph *dgGraph) Start(client *DGClient) {
 	for {
 		var message ManagementMessage;
-		select  {
-		case message = <- *graph.AddChannel:
+		select {
+		case message = <-*graph.AddChannel:
 			newRequest := message.parameter.(*DGRequest)
 			graph.add(newRequest, client.inManagementChannel)
 
-		case message = <- *graph.RemoveChannel:
-			updatedLastInManagementChannel :=  message.parameter.(*chan ManagementMessage)
+		case message = <-*graph.RemoveChannel:
+			updatedLastInManagementChannel := message.parameter.(*chan ManagementMessage)
 			graph.lastNodeInManagementChannel = updatedLastInManagementChannel
+			graph.Population--
+			fmt.Println("msg de saida")
 		}
 	}
+}
+
+func (graph *dgGraph)GetPopulationAdd() bool{
+	if(graph.Population < graph.GraphLimit){
+		return true
+	}
+	return false
 }
 
 func GetPrint() bool {

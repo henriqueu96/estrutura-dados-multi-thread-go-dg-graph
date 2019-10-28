@@ -1,6 +1,7 @@
 package dgGraph
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -21,14 +22,25 @@ func (client DGClient) Run(graph *dgGraph, preset []*DGRequest) {
 
 	go graph.Start(&client)
 	go ReaderChan(&client, graph)
+	go printPopulation(graph)
 	for i := range preset {
 		request := preset[i]
+		if graph.GetPopulationAdd(){
+			*graph.AddChannel <- NewManagementMessage(enterNewNode, request)
+			i++
+			//graph.Population++
+		}
 		time.Sleep(time.Nanosecond * 5)
-		*graph.AddChannel <- NewManagementMessage(enterNewNode, request)
-		i++
 	}
 }
 
+func printPopulation(graph *dgGraph){
+	for{
+		fmt.Println(graph.Population)
+		time.Sleep(time.Second)
+	}
+
+}
 func ReaderChan(client *DGClient, graph *dgGraph) {
 	for {
 		message := <-*client.inManagementChannel
@@ -50,13 +62,10 @@ func verificacaoSaida(message ManagementMessage, graph *dgGraph) {
 					return
 				}
 
-				*graph.RemoveChannel <- NewManagementMessage(leavingNode, theLeavingNode.NextNodeInManagementChannel)
+				*graph.RemoveChannel <- NewManagementMessage(leavingNode, *theLeavingNode.NextNodeInManagementChannel)
 			}
 		} else {
-			if *graph.lastNodeInManagementChannel != nil{
-				*graph.lastNodeInManagementChannel <- NewManagementMessage(leavingNode, theLeavingNode) // explodiu erro aqui - chan = nil
-			}
-
+			*graph.lastNodeInManagementChannel <- NewManagementMessage(leavingNode, theLeavingNode) // explodiu erro aqui - chan = nil
 		}
 
 	}
