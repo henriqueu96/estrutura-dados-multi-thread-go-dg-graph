@@ -22,7 +22,7 @@ func (client DGClient) Run(graph *dgGraph, preset []*DGRequest) {
 
 	go graph.Start(&client)
 	go ReaderChan(&client, graph)
-	// go printPopulation(graph)
+	go printPopulation(graph)
 	for i := range preset {
 		request := preset[i]
 		if graph.GetPopulationAdd() {
@@ -42,7 +42,7 @@ func printPopulation(graph *dgGraph) {
 func ReaderChan(client *DGClient, graph *dgGraph) {
 	for {
 		message := <-*client.inManagementChannel
-		verificacaoSaida(message, graph)
+		ExitVerification(message, graph)
 	}
 }
 
@@ -51,25 +51,23 @@ func ReaderChan(client *DGClient, graph *dgGraph) {
 	- Caso não seja, só passa a mensagem pra frente
 
 */
-func verificacaoSaida(message ManagementMessage, graph *dgGraph) {
+func ExitVerification(message ManagementMessage, graph *dgGraph) {
 	theLeavingNode := message.parameter.(*dgNode)
 	switch message.messageType {
 	case leavingNode:
 		if graph.lastNodeInManagementChannel == theLeavingNode.inManagementChannel {
 			*theLeavingNode.inManagementChannel <- NewManagementMessage(wantToDelete, graph.WantDeleteChannel)
-			for {
-				message := <-*graph.WantDeleteChannel
-				if message.parameter != nil {
-					nodeDelete := message.parameter.(*dgNode)
-					*graph.RemoveChannel <- NewManagementMessage(leavingNode, nodeDelete.NextNodeInManagementChannel)
-					*nodeDelete.inManagementChannel <- NewManagementMessage(leavingNode, nodeDelete)
-					return
-				}
-			}
+			WaitingForWantToDeleteResponse(graph)
 		} else {
-			// NÃO PODE SER NULL - se ele não é o próximo, então ele tem que ter um próximo
+			// NÃO PODE SER NULL - se ele não é o próximo, então ele tem que ter um anterior
 			*graph.lastNodeInManagementChannel <- NewManagementMessage(leavingNode, theLeavingNode)
 		}
 	}
+}
 
+func WaitingForWantToDeleteResponse(graph *dgGraph) {
+	message := <-*graph.WantDeleteChannel
+	nodeThatWantDelete := message.parameter.(*dgNode)
+	*graph.UpdateLastNodeInManagementChannel <- NewManagementMessage(irrelevant, nodeThatWantDelete.NextNodeInManagementChannel)
+	*nodeThatWantDelete.inManagementChannel <- NewManagementMessage(leavingNode, nodeThatWantDelete)
 }

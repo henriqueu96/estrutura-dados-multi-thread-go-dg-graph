@@ -23,6 +23,7 @@ const (
 	endFunc             ManagementMessageType = "endFunc" // termina execução
 	leavingNode ManagementMessageType = "leavingNode" // nodo pedindo pra sair
 	wantToDelete ManagementMessageType = "wantToDelete" //querendo deletar o nodo seguinte
+	irrelevant ManagementMessageType = "irrelevant"
 )
 
 
@@ -35,5 +36,6 @@ var MessageTypes = map[ManagementMessageType] string{
 	endFunc:    "endFunc",
 	leavingNode: "leavingNode",
 	wantToDelete: "wantToDelete",
+	irrelevant: "irrelevant",
 }
 
