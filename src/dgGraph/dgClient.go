@@ -22,15 +22,13 @@ func (client DGClient) Run(graph *dgGraph, preset []*DGRequest) {
 
 	go graph.Start(&client)
 	go ReaderChan(&client, graph)
-	go printPopulation(graph)
+	// go printPopulation(graph)
 	for i := range preset {
 		request := preset[i]
 		if graph.GetPopulationAdd(){
 			*graph.AddChannel <- NewManagementMessage(enterNewNode, request)
 			i++
-			//graph.Population++
 		}
-		time.Sleep(time.Nanosecond * 5)
 	}
 }
 

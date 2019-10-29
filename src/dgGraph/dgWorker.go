@@ -3,7 +3,6 @@ package dgGraph
 import (
 	"fmt"
 	"sync/atomic"
-	"time"
 )
 
 var myList = NewMyList()
@@ -23,6 +22,5 @@ func Work(node *dgNode) {
 	if (GetPrint()) {
 		fmt.Println("Event:Working Start " + node.ToString())
 	}
-	time.Sleep(time.Millisecond * 10)
 	*node.inManagementChannel <- NewManagementMessage(endFunc, nil);
 }
