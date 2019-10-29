@@ -146,9 +146,9 @@ func newMethodIn(node *dgNode, message ManagementMessage) {
 				return
 			}
 		} else {
-			//if (node.NextNodeInManagementChannel != nil) {
+			if (node.NextNodeInManagementChannel != nil) {
 				*node.NextNodeInManagementChannel <- NewManagementMessage(leavingNode, theLeavingNode)
-			//}
+			}
 		}
 	case wantToDelete:
 		wantManagementChannel := message.parameter.(*chan ManagementMessage)

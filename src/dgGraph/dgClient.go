@@ -25,15 +25,15 @@ func (client DGClient) Run(graph *dgGraph, preset []*DGRequest) {
 	// go printPopulation(graph)
 	for i := range preset {
 		request := preset[i]
-		if graph.GetPopulationAdd(){
+		if graph.GetPopulationAdd() {
 			*graph.AddChannel <- NewManagementMessage(enterNewNode, request)
 			i++
 		}
 	}
 }
 
-func printPopulation(graph *dgGraph){
-	for{
+func printPopulation(graph *dgGraph) {
+	for {
 		fmt.Println(graph.Population)
 		time.Sleep(time.Second)
 	}
@@ -45,27 +45,31 @@ func ReaderChan(client *DGClient, graph *dgGraph) {
 		verificacaoSaida(message, graph)
 	}
 }
+
+/*
+	- Cliente se o leavingNode é o próximo nodo
+	- Caso não seja, só passa a mensagem pra frente
+
+*/
 func verificacaoSaida(message ManagementMessage, graph *dgGraph) {
 	theLeavingNode := message.parameter.(*dgNode)
 	switch message.messageType {
 	case leavingNode:
-		if (graph.lastNodeInManagementChannel == theLeavingNode.inManagementChannel) {
+		if graph.lastNodeInManagementChannel == theLeavingNode.inManagementChannel {
 			*theLeavingNode.inManagementChannel <- NewManagementMessage(wantToDelete, graph.WantDeleteChannel)
 			for {
 				message := <-*graph.WantDeleteChannel
 				if message.parameter != nil {
 					nodeDelete := message.parameter.(*dgNode)
-					graph.lastNodeInManagementChannel = nodeDelete.NextNodeInManagementChannel
+					*graph.RemoveChannel <- NewManagementMessage(leavingNode, nodeDelete.NextNodeInManagementChannel)
 					*nodeDelete.inManagementChannel <- NewManagementMessage(leavingNode, nodeDelete)
 					return
 				}
-
-				*graph.RemoveChannel <- NewManagementMessage(leavingNode, *theLeavingNode.NextNodeInManagementChannel)
 			}
 		} else {
-			*graph.lastNodeInManagementChannel <- NewManagementMessage(leavingNode, theLeavingNode) // explodiu erro aqui - chan = nil
+			// NÃO PODE SER NULL - se ele não é o próximo, então ele tem que ter um próximo
+			*graph.lastNodeInManagementChannel <- NewManagementMessage(leavingNode, theLeavingNode)
 		}
-
 	}
 
 }

@@ -65,7 +65,7 @@ func getFloatArgument(index int) (float64, error) {
 }
 
 func generatePreset(dependencyOdds float64, myListLimit int) (requests []*dgGraph.DGRequest) {
-	for i := 0; i < 20; i++ {
+	for i := 0; i < 500; i++ {
 		requests = append(requests, generateRequest(getRandonInt(myListLimit), dependencyOdds))
 	}
 	return requests
@@ -83,7 +83,7 @@ func generateRequest(value int, dependencyOdds float64) *dgGraph.DGRequest {
 
 func measureMetrics(client *dgGraph.DGClient) {
 	var metric uint64 = 0;
-	for i := 0; i < 1; i++ {
+	for i := 0; i < 3; i++ {
 		var workerProcessesNumber uint64 = 0;
 		messagesNumber := client.MessagesNumber;
 		workerProcessesNumber += dgGraph.GetProcessNumber()

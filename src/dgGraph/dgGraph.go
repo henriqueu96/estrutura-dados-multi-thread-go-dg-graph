@@ -1,6 +1,8 @@
 package dgGraph
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type dgGraph struct {
 	AddChannel                  *chan ManagementMessage
@@ -52,20 +54,20 @@ func (graph *dgGraph) Start(client *DGClient) {
 
 		case message = <-*graph.RemoveChannel:
 			updatedLastInManagementChannel := message.parameter.(*chan ManagementMessage)
+
 			graph.lastNodeInManagementChannel = updatedLastInManagementChannel
 			graph.Population--
-			fmt.Println("msg de saida")
 		}
 	}
 }
 
-func (graph *dgGraph)GetPopulationAdd() bool{
-	if(graph.Population < graph.GraphLimit){
+func (graph *dgGraph) GetPopulationAdd() bool {
+	if (graph.Population < graph.GraphLimit) {
 		return true
 	}
 	return false
 }
 
 func GetPrint() bool {
-	return false
+	return true
 }
