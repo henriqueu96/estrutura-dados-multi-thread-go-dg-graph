@@ -38,15 +38,14 @@ func main() {
 	client := dgGraph.NewDGClient()
 	go client.Run(&graph, preset)
 
-	time.Sleep(10 *time.Minute);
-	//measureMetrics(&client)
+	time.Sleep(10 *time.Minute)
 }
 
-func getRandonInt(limit int) int {
+func getRandomInt(limit int) int {
 	return rand.Intn(limit)
 }
 
-func getRandonFloat() float64 {
+func getRandomFloat() float64 {
 	return rand.Float64()
 }
 
@@ -66,7 +65,7 @@ func getFloatArgument(index int) (float64, error) {
 
 func generatePreset(dependencyOdds float64, myListLimit int) (requests []*dgGraph.DGRequest) {
 	for i := 0; i < presetLengthNumber; i++ {
-		requests = append(requests, generateRequest(getRandonInt(myListLimit), dependencyOdds))
+		requests = append(requests, generateRequest(getRandomInt(myListLimit), dependencyOdds))
 	}
 	return requests
 }
@@ -74,7 +73,7 @@ func generatePreset(dependencyOdds float64, myListLimit int) (requests []*dgGrap
 func generateRequest(value int, dependencyOdds float64) *dgGraph.DGRequest {
 	requestType := dgGraph.Read
 
-	if getRandonFloat() < dependencyOdds {
+	if getRandomFloat() < dependencyOdds {
 		requestType = dgGraph.Write
 	}
 	request := dgGraph.NewRequest(value, requestType)

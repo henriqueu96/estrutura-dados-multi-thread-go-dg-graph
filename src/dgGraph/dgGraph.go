@@ -2,25 +2,31 @@ package dgGraph
 
 type dgGraph struct {
 	lastNodeInManagementChannel *chan ManagementMessage
+	lastNode                    *dgNode
 	addAndUpdateLastChannel     *chan ManagementMessage
 	leavingNodeChannel          *chan ManagementMessage
 	outManagementChannel        *chan ManagementMessage
+	wantToDeleteAnswaerChannel  *chan ManagementMessage
 	GraphLimit                  int
 	Client                      DGClient
+	length                      int
 }
 
 func NewGraph(graphLimit int) dgGraph {
 	addAndUpdateLastChannel := make(chan ManagementMessage)
 	leavingNodeChannel := make(chan ManagementMessage)
+	wantToDeleteAnswaerChannel := make(chan ManagementMessage)
 	return dgGraph{
 		GraphLimit:                  graphLimit,
 		lastNodeInManagementChannel: nil,
 		addAndUpdateLastChannel:     &addAndUpdateLastChannel,
-		leavingNodeChannel: &leavingNodeChannel,
+		leavingNodeChannel:          &leavingNodeChannel,
+		wantToDeleteAnswaerChannel:  &wantToDeleteAnswaerChannel,
+		length:                      0,
 	}
 }
 
-func (dgGraph *dgGraph) toString() string{
+func (dgGraph *dgGraph) toString() string {
 	return "Graph";
 }
 
@@ -42,6 +48,7 @@ func (graph *dgGraph) StartAddAndUpdateLastChannelChannelReader() {
 		var printer Printer = nil;
 		switch message.messageType {
 		case AddRequest:
+			graph.length++
 			printer = graph.Client
 			newRequest := message.parameter.(*DGRequest)
 			graph.add(newRequest, graph.leavingNodeChannel)
@@ -52,7 +59,11 @@ func (graph *dgGraph) StartAddAndUpdateLastChannelChannelReader() {
 			graph.lastNodeInManagementChannel = updatedLastInManagementChannel
 		}
 
-		PrintMessage(message, graph, printer)
+		if printer != nil {
+			PrintMessage(message, graph, printer)
+		} else {
+			PrintMessageWithoutSender(message, graph)
+		}
 	}
 }
 
@@ -61,12 +72,35 @@ func (graph *dgGraph) StartLeavingNodeChannelReader() {
 		message := <-*graph.leavingNodeChannel;
 		theLeavingNode := message.parameter.(*dgNode)
 
-		PrintMessage(message, graph, theLeavingNode)
+		if message.parameter != nil {
+			PrintMessage(message, graph, theLeavingNode)
+		} else {
+			PrintMessageWithoutSender(message, graph)
+		}
 
 		switch message.messageType {
 		case leavingNode:
-			
+			if theLeavingNode.inManagementChannel == graph.lastNodeInManagementChannel {
+				go theLeavingNodeIsTheFirstHandle(graph, theLeavingNode)
+			} else {
+				*graph.lastNodeInManagementChannel <- NewManagementMessage(leavingNode, theLeavingNode)
+			}
 		}
 	}
+}
 
+func (dgGraph *dgGraph) isFull() bool {
+	return dgGraph.length >= dgGraph.GraphLimit-1;
+}
+
+func theLeavingNodeIsTheFirstHandle(graph *dgGraph, theLeavingNode *dgNode) {
+	*theLeavingNode.inManagementChannel <- NewManagementMessage(wantToDelete, graph.wantToDeleteAnswaerChannel)
+	message := <-*graph.wantToDeleteAnswaerChannel
+	wantToDeleteAnswaerChannelHandle(graph, &message)
+}
+
+func wantToDeleteAnswaerChannelHandle(graph *dgGraph, message *ManagementMessage) {
+	nodeDelete := message.parameter.(*dgNode)
+	*graph.addAndUpdateLastChannel <- NewManagementMessage(UpdateLastInManagementChannel, nodeDelete.NextNodeInManagementChannel)
+	*nodeDelete.inManagementChannel <- NewManagementMessage(leavingNode, nodeDelete)
 }

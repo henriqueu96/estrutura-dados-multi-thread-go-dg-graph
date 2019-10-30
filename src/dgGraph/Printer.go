@@ -2,7 +2,7 @@ package dgGraph
 
 import "fmt"
 
-var shouldPrint = true;
+var shouldPrint = true
 
 type Printer interface {
 	toString() string
@@ -11,7 +11,7 @@ type Printer interface {
 func PrintMessage(message ManagementMessage, receiver Printer, sender Printer){
 	if shouldPrint {
 		messageType := MessageTypes[message.messageType]
-		fmt.Println("Event:" + messageType + " Receiver: " + receiver.toString() + " sender: " + sender.toString() )
+		fmt.Println("Sender: " + sender.toString() + " --> Receiver: " + receiver.toString() + " --> Event:" + messageType)
 	}
 }
 

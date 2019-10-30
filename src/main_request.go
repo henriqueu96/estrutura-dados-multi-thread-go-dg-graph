@@ -72,25 +72,25 @@ func measureMetrics(client *requests.Client, workers []*requests.Worker) {
 
 func generatePreset(dependencyOdds float64, myListLimit int) (requests []*requests.Request) {
 	for i := 0; i < 16777216; i++ {
-		requests = append(requests, generateRequest(getRandonInt(myListLimit), dependencyOdds))
+		requests = append(requests, generateRequest(getRandomInt(myListLimit), dependencyOdds))
 	}
 	return
 }
 
 func generateRequest(value int, dependencyOdds float64) *requests.Request {
 	requestType := requests.Read
-	if dependencyOdds < getRandonFloat() {
+	if dependencyOdds < getRandomFloat() {
 		requestType = requests.Write
 	}
 	request := requests.NewRequest(value, requestType)
 	return &request
 }
 
-func getRandonInt(limit int) int {
+func getRandomInt(limit int) int {
 	return rand.Intn(limit)
 }
 
-func getRandonFloat() float64 {
+func getRandomFloat() float64 {
 	return rand.Float64()
 }
 

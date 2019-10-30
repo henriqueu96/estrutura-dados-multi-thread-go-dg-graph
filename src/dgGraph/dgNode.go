@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"sync"
+	"sync/atomic"
 )
 
 var idIndex uint64 = 0;
@@ -12,8 +13,8 @@ type dgNode struct {
 	id                          uint64
 	status                      dgNodeStatus
 	request                     *DGRequest
-	dependenciesNumber          int
-	solvedDependenciesNumber    int
+	dependenciesNumber          uint64
+	solvedDependenciesNumber    uint64
 	dependentsChannelsList      *[]*chan ManagementMessage
 	inManagementChannel         *chan ManagementMessage
 	answersManagementChannel    *chan ManagementMessage
@@ -22,9 +23,10 @@ type dgNode struct {
 	ClientManagementChannel     *chan ManagementMessage
 	isOn                        bool
 	graph                       *dgGraph
+	nextNode                    *dgNode
 }
 
-func newNode(request *DGRequest, nextNodeInManagementChannel *chan ManagementMessage, clientManagementChannel *chan ManagementMessage, graph *dgGraph) dgNode {
+func newNode(request *DGRequest, nextNodeInManagementChannel *chan ManagementMessage, clientManagementChannel *chan ManagementMessage, graph *dgGraph, node *dgNode) dgNode {
 	idIndex++;
 	chanIn := make(chan ManagementMessage, 10)
 	chanOut := make(chan ManagementMessage, 10)
@@ -43,6 +45,7 @@ func newNode(request *DGRequest, nextNodeInManagementChannel *chan ManagementMes
 		isOn:                        true,
 		graph:                       graph,
 		leavingNodeAnswerChannel:    &chanWant,
+		nextNode:                    node,
 	}
 }
 
@@ -74,10 +77,10 @@ func (node *dgNode) inManagementChannelReader() {
 
 func inManagementChannelReader(node *dgNode, message ManagementMessage) {
 
-	if(message.parameter != nil){
+	if message.parameter != nil && message.messageType != wantToDelete {
 		var parameter = message.parameter.(Printer)
 		PrintMessage(message, node, parameter)
-	} else{
+	} else {
 		PrintMessageWithoutSender(message, node)
 	}
 
@@ -121,7 +124,6 @@ func inManagementChannelReader(node *dgNode, message ManagementMessage) {
 		wantManagementChannel := message.parameter.(*chan ManagementMessage)
 		*wantManagementChannel <- NewManagementMessage(wantToDelete, node)
 	}
-
 }
 
 func leavingNodeHandle(node *dgNode, message ManagementMessage) {
@@ -131,7 +133,7 @@ func leavingNodeHandle(node *dgNode, message ManagementMessage) {
 	if theLeavingNode == node {
 		nodeShouldLeaveHandle(theLeavingNode)
 	} else if node.IsNextNode(theLeavingNode) {
-		isTheNextNodeLeavingHandle(theLeavingNode)
+		go isTheNextNodeLeavingHandle(theLeavingNode)
 	} else {
 		*node.NextNodeInManagementChannel <- NewManagementMessage(leavingNode, theLeavingNode)
 	}
@@ -143,14 +145,12 @@ func nodeShouldLeaveHandle(node *dgNode) {
 }
 
 func isTheNextNodeLeavingHandle(node *dgNode) {
-	*node.NextNodeInManagementChannel <- NewManagementMessage(wantToDelete, node.leavingNodeAnswerChannel)
-	for node.isOn {
-		message := <-*node.leavingNodeAnswerChannel
-		if message.parameter != nil {
-			nodeDelete := message.parameter.(*dgNode)
-			node.NextNodeInManagementChannel = nodeDelete.NextNodeInManagementChannel
-			*nodeDelete.inManagementChannel <- NewManagementMessage(leavingNode, nodeDelete)
-		}
+	*node.inManagementChannel <- NewManagementMessage(wantToDelete, node.leavingNodeAnswerChannel)
+	message := <-*node.leavingNodeAnswerChannel
+	if message.parameter != nil {
+		nodeDelete := message.parameter.(*dgNode)
+		node.NextNodeInManagementChannel = nodeDelete.NextNodeInManagementChannel
+		*nodeDelete.inManagementChannel <- NewManagementMessage(leavingNode, nodeDelete)
 	}
 }
 
@@ -163,30 +163,39 @@ func (node *dgNode) answersManagementChannelReader() {
 	if node.graph.lastNodeInManagementChannel == node.inManagementChannel {
 		*node.graph.addAndUpdateLastChannel <- NewManagementMessage(leavingNode, node.NextNodeInManagementChannel)
 	}
-	fmt.Println("Leaving" + node.toString())
+
+	fmt.Println("Leaving node" + node.toString())
+
+	close(*node.inManagementChannel)
+	close(*node.answersManagementChannel)
+	close(*node.leavingNodeAnswerChannel)
+
+	cond.Signal()
+	node.graph.length--
 }
 
 func answersManagementChannelReader(node *dgNode, message ManagementMessage) {
-	if(message.parameter != nil){
+
+	if message.parameter != nil {
 		var parameter = message.parameter.(Printer)
 		PrintMessage(message, node, parameter)
-	} else{
+	} else {
 		PrintMessageWithoutSender(message, node)
 	}
 
 	switch message.messageType {
 	case hasConflictMessage:
-		node.dependenciesNumber++
+		atomic.AddUint64(&node.dependenciesNumber, 1)
 
 	case endsConflictMessage:
 		node.status = waiting
-		if node.dependenciesNumber == node.solvedDependenciesNumber {
+		if atomic.LoadUint64(&node.dependenciesNumber) == atomic.LoadUint64(&node.solvedDependenciesNumber) {
 			node.status = ready
 			go Work(node)
 		}
 
 	case decreaseConflict:
-		node.solvedDependenciesNumber++
+		atomic.AddUint64(&node.solvedDependenciesNumber, 1)
 		if node.IsRedyToGo() {
 			node.status = ready
 			go Work(node)
