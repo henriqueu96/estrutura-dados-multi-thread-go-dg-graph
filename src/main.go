@@ -16,6 +16,10 @@ import (
 
 var args = os.Args
 
+
+var presetLengthNumber = 10;
+
+
 func main() {
 
 	if len(args) < 4 {
@@ -61,7 +65,7 @@ func getFloatArgument(index int) (float64, error) {
 }
 
 func generatePreset(dependencyOdds float64, myListLimit int) (requests []*dgGraph.DGRequest) {
-	for i := 0; i < 100000; i++ {
+	for i := 0; i < presetLengthNumber; i++ {
 		requests = append(requests, generateRequest(getRandonInt(myListLimit), dependencyOdds))
 	}
 	return requests

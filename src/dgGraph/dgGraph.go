@@ -1,22 +1,27 @@
 package dgGraph
 
 type dgGraph struct {
-	AddChannel                  *chan ManagementMessage
 	lastNodeInManagementChannel *chan ManagementMessage
-	RemoveChannel               *chan ManagementMessage
+	addAndUpdateLastChannel     *chan ManagementMessage
+	leavingNodeChannel          *chan ManagementMessage
+	outManagementChannel        *chan ManagementMessage
 	GraphLimit                  int
-	Client DGClient
+	Client                      DGClient
 }
 
 func NewGraph(graphLimit int) dgGraph {
-	add := make(chan ManagementMessage)
-	remove := make(chan ManagementMessage)
+	addAndUpdateLastChannel := make(chan ManagementMessage)
+	leavingNodeChannel := make(chan ManagementMessage)
 	return dgGraph{
 		GraphLimit:                  graphLimit,
 		lastNodeInManagementChannel: nil,
-		AddChannel:                  &add,
-		RemoveChannel:                  &remove,
+		addAndUpdateLastChannel:     &addAndUpdateLastChannel,
+		leavingNodeChannel: &leavingNodeChannel,
 	}
+}
+
+func (dgGraph *dgGraph) toString() string{
+	return "Graph";
 }
 
 func (dgGraph *dgGraph) add(request *DGRequest, clientManagementChannel *chan ManagementMessage) {
@@ -26,17 +31,42 @@ func (dgGraph *dgGraph) add(request *DGRequest, clientManagementChannel *chan Ma
 	*node.inManagementChannel <- NewManagementMessage(enterNewNode, &node)
 }
 
-func (graph *dgGraph) Start(client *DGClient) {
-	for {
-		var message ManagementMessage;
-		select  {
-		case message = <- *graph.AddChannel:
-			newRequest := message.parameter.(*DGRequest)
-			graph.add(newRequest, client.inManagementChannel)
+func (graph *dgGraph) Start() {
+	go graph.StartAddAndUpdateLastChannelChannelReader()
+	go graph.StartLeavingNodeChannelReader()
+}
 
-		case message = <- *graph.RemoveChannel:
-			updatedLastInManagementChannel :=  message.parameter.(*chan ManagementMessage)
+func (graph *dgGraph) StartAddAndUpdateLastChannelChannelReader() {
+	for {
+		message := <-*graph.addAndUpdateLastChannel;
+		var printer Printer = nil;
+		switch message.messageType {
+		case AddRequest:
+			printer = graph.Client
+			newRequest := message.parameter.(*DGRequest)
+			graph.add(newRequest, graph.leavingNodeChannel)
+
+		case UpdateLastInManagementChannel:
+			printer = graph
+			updatedLastInManagementChannel := message.parameter.(*chan ManagementMessage)
 			graph.lastNodeInManagementChannel = updatedLastInManagementChannel
 		}
+
+		PrintMessage(message, graph, printer)
 	}
+}
+
+func (graph *dgGraph) StartLeavingNodeChannelReader() {
+	for {
+		message := <-*graph.leavingNodeChannel;
+		theLeavingNode := message.parameter.(*dgNode)
+
+		PrintMessage(message, graph, theLeavingNode)
+
+		switch message.messageType {
+		case leavingNode:
+			
+		}
+	}
+
 }
