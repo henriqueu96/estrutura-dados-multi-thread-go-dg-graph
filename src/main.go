@@ -17,7 +17,7 @@ import (
 var args = os.Args
 
 
-var presetLengthNumber = 10;
+var presetLengthNumber = 10000;
 
 
 func main() {

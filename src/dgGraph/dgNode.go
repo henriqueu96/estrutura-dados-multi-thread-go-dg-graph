@@ -1,7 +1,6 @@
 package dgGraph
 
 import (
-	"fmt"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -20,13 +19,12 @@ type dgNode struct {
 	answersManagementChannel    *chan ManagementMessage
 	leavingNodeAnswerChannel    *chan ManagementMessage
 	NextNodeInManagementChannel *chan ManagementMessage
-	ClientManagementChannel     *chan ManagementMessage
+	GraphManagementChannel      *chan ManagementMessage
 	isOn                        bool
 	graph                       *dgGraph
-	nextNode                    *dgNode
 }
 
-func newNode(request *DGRequest, nextNodeInManagementChannel *chan ManagementMessage, clientManagementChannel *chan ManagementMessage, graph *dgGraph, node *dgNode) dgNode {
+func newNode(request *DGRequest, graph *dgGraph) dgNode {
 	idIndex++;
 	chanIn := make(chan ManagementMessage, 10)
 	chanOut := make(chan ManagementMessage, 10)
@@ -39,13 +37,12 @@ func newNode(request *DGRequest, nextNodeInManagementChannel *chan ManagementMes
 		dependentsChannelsList:      &[]*chan ManagementMessage{},
 		inManagementChannel:         &chanIn,
 		answersManagementChannel:    &chanOut,
-		NextNodeInManagementChannel: nextNodeInManagementChannel,
+		NextNodeInManagementChannel: graph.lastNodeInManagementChannel,
 		status:                      entering,
-		ClientManagementChannel:     clientManagementChannel,
+		GraphManagementChannel:      graph.addAndDeleteChannel,
 		isOn:                        true,
 		graph:                       graph,
 		leavingNodeAnswerChannel:    &chanWant,
-		nextNode:                    node,
 	}
 }
 
@@ -115,7 +112,7 @@ func inManagementChannelReader(node *dgNode, message ManagementMessage) {
 		for _, e := range *node.dependentsChannelsList {
 			*e <- NewManagementMessage(decreaseConflict, nil)
 		}
-		*node.ClientManagementChannel <- NewManagementMessage(leavingNode, node)
+		*node.GraphManagementChannel <- NewManagementMessage(leavingNode, node)
 
 	case leavingNode:
 		leavingNodeHandle(node, message)
@@ -133,7 +130,7 @@ func leavingNodeHandle(node *dgNode, message ManagementMessage) {
 	if theLeavingNode == node {
 		nodeShouldLeaveHandle(theLeavingNode)
 	} else if node.IsNextNode(theLeavingNode) {
-		go isTheNextNodeLeavingHandle(theLeavingNode)
+		isTheNextNodeLeavingHandle(node, theLeavingNode)
 	} else {
 		*node.NextNodeInManagementChannel <- NewManagementMessage(leavingNode, theLeavingNode)
 	}
@@ -144,8 +141,8 @@ func nodeShouldLeaveHandle(node *dgNode) {
 	*node.answersManagementChannel <- NewManagementMessage(leavingNode, nil)
 }
 
-func isTheNextNodeLeavingHandle(node *dgNode) {
-	*node.inManagementChannel <- NewManagementMessage(wantToDelete, node.leavingNodeAnswerChannel)
+func isTheNextNodeLeavingHandle(node, theLeavingNode *dgNode) {
+	*theLeavingNode.inManagementChannel <- NewManagementMessage(wantToDelete, node.leavingNodeAnswerChannel)
 	message := <-*node.leavingNodeAnswerChannel
 	if message.parameter != nil {
 		nodeDelete := message.parameter.(*dgNode)
@@ -161,10 +158,8 @@ func (node *dgNode) answersManagementChannelReader() {
 	}
 
 	if node.graph.lastNodeInManagementChannel == node.inManagementChannel {
-		*node.graph.addAndUpdateLastChannel <- NewManagementMessage(leavingNode, node.NextNodeInManagementChannel)
+		*node.graph.addAndDeleteChannel <- NewManagementMessage(leavingNode, node.NextNodeInManagementChannel)
 	}
-
-	fmt.Println("Leaving node" + node.toString())
 
 	close(*node.inManagementChannel)
 	close(*node.answersManagementChannel)

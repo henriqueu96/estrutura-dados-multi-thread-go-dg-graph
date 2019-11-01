@@ -20,6 +20,6 @@ func Work(node *dgNode) {
 	request := node.request
 	request.Execute(&myList)
 	incrementProcessNumber()
-	fmt.Println("Event:Working Start " + node.toString())
+	fmt.Println(node.id)
 	*node.inManagementChannel <- NewManagementMessage(endFunc, nil);
 }

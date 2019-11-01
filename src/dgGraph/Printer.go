@@ -2,7 +2,7 @@ package dgGraph
 
 import "fmt"
 
-var shouldPrint = true
+var shouldPrint = false
 
 type Printer interface {
 	toString() string
