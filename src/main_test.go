@@ -55,7 +55,7 @@ func TestMain_GetIntArgument_ShouldReturnTheMyListLimit(t *testing.T) {
 }
 
 func TestMain_getRandonFloat_ShouldReturnANumberGraterThan0AndLessThan1(t *testing.T) {
-	randonFloat := getRandonFloat()
+	randonFloat := getRandomFloat()
 	if randonFloat < 0 || randonFloat > 1{
 		t.Fail()
 	}

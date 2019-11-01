@@ -1,0 +1,46 @@
+Olá Kim,
+
+
+
+nao parei para pensar na remoção.
+a ideia nao seria criar um bloqueio geral, não.
+foge da estrategia de modelagem.
+o nodo teria que sair ainda se comunicando com os outros!
+vamos tentar pensar em trocas de mensagens para ele sair.
+
+
+a mais simples talvez seja - depois de mandar mensagens de liberacao para os que dependem dele - ele mandar uma mensagem para a cabeça da lista de nodos dizendo que ele quer sair.
+A mensagem é repassada do inicio até o nodo, cujo proximo é o nodo a ser deletado, recebe a mensagem.
+este entao atualiza o canal do proximo para o próximo do nodo em deleção - e o outro nodo tem que atualizar o canal de anterior para ele (hmmm).
+
+talvez esta seja uma forma.    como todos os pedidos de saida seriam processados em uma ordem, talvez isto nao gere problemas.
+temos que ver se mensagens restantes nos canais do nodo deletado teriam que ser movidas para canais dos vizinhos.
+pensa mais por esta direção ...
+
+
+------------------------------------------------------------------
+
+ok.   vamos ver isto depois.
+se queres ver outro efeito, na tua thread que cria podes inserir uma pausa (sleep) bem pequeno entre duas criações de nodo.
+dai deve passar a prioridade para outras threads.
+mas a prioridade é conseguir ter confiança de que esta executando.
+por exemplo:   todos os nodos inseridos executam;   existe concorrencia de independentes;   dependentes sao de fato sequencializados; etc.
+
+sobre o protocolo de retirada, creio que o caminho seja este mesmo.    agora tem que desdobrar os casos especificos (está contigo).
+depois de feito este, podemos ver se existe alguma forma melhor, envolvendo somente os visinhos diretos do nodo
+que quer sair.    esta variante é certamente mais complexa que a que eu sugeri.    vamos comecar pela mais simples.
+
+desejo um produtivo final de semana!!!!!
+
+
+ToDo: verificar o pq nos primeiros nodos esta ficando fora de ordem
+
+-> adicionar um canal no cliente para receber mensagem de nodo_deletando
+
+-> criar uma nova mensagem de deletando entre os nodos - passando o nodo em si e verificando o canal In se é o mesmo canal do nodo seguinte. Sendo igual altera pelo canal NextNodoIn.
+
+ToDo: Precisamos tratar caso a mensagem de saida do nodo posterior_do_posterior chegar antes da mensagem do posterior) - acho que ja consegui contornar isso, só temos que testa
+
+
+
+
