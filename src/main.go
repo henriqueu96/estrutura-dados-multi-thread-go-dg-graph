@@ -13,7 +13,7 @@ import (
 var args = os.Args
 
 
-var presetLengthNumber = 1000000;
+var presetLengthNumber uint64 = 100;
 
 
 func main() {
@@ -34,7 +34,12 @@ func main() {
 	client := dgGraph.NewDGClient()
 	go client.Run(&graph, preset)
 
-	time.Sleep(10 *time.Minute)
+	for(dgGraph.GetProcessNumber()<presetLengthNumber){
+
+		time.Sleep(time.Second)
+	}
+	time.Sleep(time.Minute)
+
 fmt.Println(dgGraph.GetProcessNumber())
 }
 
@@ -61,7 +66,7 @@ func getFloatArgument(index int) (float64, error) {
 }
 
 func generatePreset(dependencyOdds float64, myListLimit int) (requests []*dgGraph.DGRequest) {
-	for i := 0; i < presetLengthNumber; i++ {
+	for i := 0; i < int(presetLengthNumber); i++ {
 		requests = append(requests, generateRequest(getRandomInt(myListLimit), dependencyOdds))
 	}
 	return requests
@@ -81,9 +86,9 @@ func measureMetrics(client *dgGraph.DGClient) {
 	var metric uint64 = 0;
 	for i := 0; i < 1; i++ {
 		var workerProcessesNumber uint64 = 0;
-		messagesNumber := client.MessagesNumber;
+		//messagesNumber := client.MessagesNumber;
 		workerProcessesNumber += dgGraph.GetProcessNumber()
-		metric += messagesNumber - workerProcessesNumber;
+		//metric += messagesNumber - workerProcessesNumber;
 	}
 	metric = metric / 10;
 	metric += dgGraph.GetProcessNumber()

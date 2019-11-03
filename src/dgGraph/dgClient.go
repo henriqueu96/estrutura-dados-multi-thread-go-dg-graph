@@ -5,12 +5,12 @@ import (
 )
 
 type DGClient struct {
-	MessagesNumber uint64
+	//MessagesNumber uint64
 }
 
 func NewDGClient() DGClient {
 	return DGClient{
-		MessagesNumber: 0,
+	//	MessagesNumber: 0,
 	}
 }
 
