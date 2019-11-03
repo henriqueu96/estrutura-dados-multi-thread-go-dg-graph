@@ -5,13 +5,9 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-	//"requests"
 	"runtime"
 	"strconv"
 	"time"
-
-	//	"requests"
-	//	"time"
 )
 
 var args = os.Args
@@ -39,6 +35,7 @@ func main() {
 	go client.Run(&graph, preset)
 
 	time.Sleep(10 *time.Minute)
+fmt.Println(dgGraph.GetProcessNumber())
 }
 
 func getRandomInt(limit int) int {

@@ -23,3 +23,4 @@ func Work(node *dgNode) {
 	fmt.Println(node.id)
 	*node.inManagementChannel <- NewManagementMessage(endFunc, nil);
 }
+

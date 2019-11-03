@@ -1,5 +1,10 @@
 package dgGraph
 
+import (
+	"math/rand"
+	"time"
+)
+
 type DGRequest struct {
 	Value       int
 	requestType requestType
@@ -17,6 +22,8 @@ func (request *DGRequest) isDependent(possibleDependent *DGRequest) bool {
 }
 
 func (request *DGRequest) Execute(myList *MyList) bool {
+	teste := rand.Intn(50) +30
+	time.Sleep(time.Duration(teste) * time.Microsecond)
 	if request.requestType == Write {
 		return myList.add(request.Value)
 	} else {
