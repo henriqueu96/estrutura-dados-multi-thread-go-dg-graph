@@ -13,7 +13,7 @@ import (
 var args = os.Args
 
 
-var presetLengthNumber uint64 = 100;
+var presetLengthNumber uint64 = 100000;
 
 
 func main() {
