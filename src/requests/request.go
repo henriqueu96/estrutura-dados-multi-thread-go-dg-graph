@@ -1,5 +1,10 @@
 package requests
 
+import (
+	"math/rand"
+	"time"
+)
+
 type Request struct {
 	Value        int
 	ExecState    ExecState
@@ -65,6 +70,8 @@ func (request *Request) removeDependent(dependent *Request) {
 }
 
 func (request *Request) Execute(myList *MyList) bool{
+	teste := rand.Intn(100) +400
+	time.Sleep(time.Duration(teste) * time.Nanosecond)
 	if(request.RequestType == Write){
 		return myList.add(request.Value)
 	} else{
