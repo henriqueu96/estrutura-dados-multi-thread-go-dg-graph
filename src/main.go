@@ -13,7 +13,7 @@ import (
 var args = os.Args
 
 
-var presetLengthNumber uint64 = 100000;
+var presetLengthNumber uint64 = 10000000;
 
 
 func main() {
@@ -38,7 +38,7 @@ func main() {
 
 		time.Sleep(time.Second)
 	}
-	time.Sleep(time.Minute)
+	time.Sleep(time.Second*10)
 
 fmt.Println(dgGraph.GetProcessNumber())
 }
