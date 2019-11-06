@@ -1,7 +1,6 @@
 package dgGraph
 
 import (
-	"fmt"
 	"sync/atomic"
 )
 
@@ -20,7 +19,6 @@ func Work(node *dgNode) {
 	request := node.request
 	request.Execute(&myList)
 	incrementProcessNumber()
-	fmt.Println(node.id)
-	*node.inManagementChannel <- NewManagementMessage(endFunc, nil);
+	*node.endFuncChannel <- NewManagementMessage(endFunc, nil);
 }
 

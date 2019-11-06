@@ -12,9 +12,7 @@ import (
 
 var args = os.Args
 
-
-var presetLengthNumber uint64 = 10000000;
-
+var presetLengthNumber uint64 = 16777216;
 
 func main() {
 
@@ -33,14 +31,7 @@ func main() {
 	preset := generatePreset(dependencyOdds, mylistLimit)
 	client := dgGraph.NewDGClient()
 	go client.Run(&graph, preset)
-
-	for(dgGraph.GetProcessNumber()<presetLengthNumber){
-
-		time.Sleep(time.Second)
-	}
-	time.Sleep(time.Second*10)
-
-fmt.Println(dgGraph.GetProcessNumber())
+	measureMetrics()
 }
 
 func getRandomInt(limit int) int {
@@ -82,17 +73,20 @@ func generateRequest(value int, dependencyOdds float64) *dgGraph.DGRequest {
 	return &request
 }
 
-func measureMetrics(client *dgGraph.DGClient) {
-	var metric uint64 = 0;
-	for i := 0; i < 1; i++ {
-		var workerProcessesNumber uint64 = 0;
-		//messagesNumber := client.MessagesNumber;
-		workerProcessesNumber += dgGraph.GetProcessNumber()
-		//metric += messagesNumber - workerProcessesNumber;
+func measureMetrics() {
+	for i := 0; i < 10; i++ {
+		workerProcessesNumber := uint64(0);
+		time.Sleep(3 * time.Second);
+		workerProcessesNumber += dgGraph.GetProcessNumber();
 	}
-	metric = metric / 10;
-	metric += dgGraph.GetProcessNumber()
 
-	commands := metric / 30;
-	fmt.Print(commands);
+	processed := uint64(0);
+	processed += dgGraph.GetProcessNumber();
+	processedPerSecound := float64(processed) / 30
+
+	fmt.Print(floatToString(processedPerSecound))
+}
+
+func floatToString(input_num float64) string {
+	return strconv.FormatFloat(input_num, 'f', 6, 64)
 }

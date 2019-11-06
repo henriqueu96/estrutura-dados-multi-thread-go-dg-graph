@@ -16,11 +16,12 @@ func NewDGClient() DGClient {
 
 var mut = sync.Mutex{}
 var cond = sync.NewCond(&mut)
+var freeToAdd = make(chan int, 1000)
 
 
 func (client DGClient) Run(graph *dgGraph, preset []*DGRequest) {
 	go graph.Start()
-
+	go freeToAddReader(graph)
 	for _, request := range preset {
 		mut.Lock()
 		if graph.isFull() {
@@ -28,6 +29,16 @@ func (client DGClient) Run(graph *dgGraph, preset []*DGRequest) {
 		}
 		*graph.addAndDeleteChannel <- NewManagementMessage(AddRequest, request)
 		mut.Unlock()
+	}
+}
+
+var ExitedNodes uint64 = 0
+func freeToAddReader(graph *dgGraph) {
+	for true{
+		_ = <-freeToAdd
+		ExitedNodes++
+		graph.length--
+		cond.Signal()
 	}
 }
 

@@ -9,7 +9,7 @@ type dgGraph struct {
 }
 
 func NewGraph(graphLimit int) dgGraph {
-	addAndDeleteChannel := make(chan ManagementMessage)
+	addAndDeleteChannel := make(chan ManagementMessage, 10)
 	return dgGraph{
 		GraphLimit:                  graphLimit,
 		lastNodeInManagementChannel: nil,

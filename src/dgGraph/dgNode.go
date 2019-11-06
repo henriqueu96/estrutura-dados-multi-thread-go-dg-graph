@@ -16,16 +16,17 @@ type dgNode struct {
 	solvedDependenciesNumber    uint64
 	dependentsChannelsList      *[]*chan ManagementMessage
 	inManagementChannel         *chan ManagementMessage
+	endFuncChannel              *chan ManagementMessage
 	answersManagementChannel    *chan ManagementMessage
 	leavingNodeAnswerChannel    *chan ManagementMessage
 	NextNodeInManagementChannel *chan ManagementMessage
-	GraphManagementChannel      *chan ManagementMessage
 	isOn                        bool
 	graph                       *dgGraph
 }
 
 func newNode(request *DGRequest, graph *dgGraph) dgNode {
 	idIndex++;
+	chanEnd := make(chan ManagementMessage, 10)
 	chanIn := make(chan ManagementMessage, 10)
 	chanOut := make(chan ManagementMessage, 10)
 	chanWant := make(chan ManagementMessage)
@@ -36,10 +37,10 @@ func newNode(request *DGRequest, graph *dgGraph) dgNode {
 		solvedDependenciesNumber:    0,
 		dependentsChannelsList:      &[]*chan ManagementMessage{},
 		inManagementChannel:         &chanIn,
+		endFuncChannel:              &chanEnd,
 		answersManagementChannel:    &chanOut,
 		NextNodeInManagementChannel: graph.lastNodeInManagementChannel,
 		status:                      entering,
-		GraphManagementChannel:      graph.addAndDeleteChannel,
 		isOn:                        true,
 		graph:                       graph,
 		leavingNodeAnswerChannel:    &chanWant,
@@ -53,6 +54,7 @@ func (node *dgNode) toString() string {
 func (node *dgNode) start() {
 	go node.inManagementChannelReader()
 	go node.answersManagementChannelReader()
+	go node.endManagementChannelReader()
 }
 
 var addRemoveSequencialy = sync.Mutex{}
@@ -107,13 +109,6 @@ func inManagementChannelReader(node *dgNode, message ManagementMessage) {
 			*node.NextNodeInManagementChannel <- NewManagementMessage(newNodeAppeared, newNode)
 		}
 
-	case endFunc:
-		node.status = leaving
-		for _, e := range *node.dependentsChannelsList {
-			*e <- NewManagementMessage(decreaseConflict, nil)
-		}
-		*node.GraphManagementChannel <- NewManagementMessage(leavingNode, node)
-
 	case leavingNode:
 		leavingNodeHandle(node, message)
 
@@ -151,10 +146,33 @@ func isTheNextNodeLeavingHandle(node, theLeavingNode *dgNode) {
 	}
 }
 
+func (node *dgNode) endManagementChannelReader() {
+	message := <-*node.endFuncChannel
+	if message.parameter != nil {
+		var parameter = message.parameter.(Printer)
+		PrintMessage(message, node, parameter)
+	} else {
+		PrintMessageWithoutSender(message, node)
+	}
+
+	if message.messageType == endFunc {
+		node.status = leaving
+		for _, e := range *node.dependentsChannelsList {
+			*e <- NewManagementMessage(decreaseConflict, nil)
+		}
+		*node.graph.addAndDeleteChannel <- NewManagementMessage(leavingNode, node)
+	}
+}
+
 func (node *dgNode) answersManagementChannelReader() {
-	for node.isOn {
+	var isOn = true;
+	for isOn {
 		message := <-*node.answersManagementChannel
-		answersManagementChannelReader(node, message)
+		if(message.messageType != leavingNode){
+			answersManagementChannelReader(node, message)
+		} else{
+			isOn = false
+		}
 	}
 
 	if node.graph.lastNodeInManagementChannel == node.inManagementChannel {
@@ -164,9 +182,9 @@ func (node *dgNode) answersManagementChannelReader() {
 	close(*node.inManagementChannel)
 	close(*node.answersManagementChannel)
 	close(*node.leavingNodeAnswerChannel)
+	close(*node.endFuncChannel)
 
-	cond.Signal()
-	node.graph.length--
+	freeToAdd <- 1
 }
 
 func answersManagementChannelReader(node *dgNode, message ManagementMessage) {
@@ -195,9 +213,5 @@ func answersManagementChannelReader(node *dgNode, message ManagementMessage) {
 			node.status = ready
 			go Work(node)
 		}
-
-	case leavingNode:
-		return
 	}
 }
-//a
