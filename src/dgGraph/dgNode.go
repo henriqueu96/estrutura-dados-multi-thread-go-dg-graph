@@ -165,8 +165,8 @@ func (node *dgNode) answersManagementChannelReader() {
 	close(*node.answersManagementChannel)
 	close(*node.leavingNodeAnswerChannel)
 
-	cond.Signal()
 	node.graph.length--
+	cond.Signal()
 }
 
 func answersManagementChannelReader(node *dgNode, message ManagementMessage) {

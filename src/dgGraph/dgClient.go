@@ -26,6 +26,7 @@ func (client DGClient) Run(graph *dgGraph, preset []*DGRequest) {
 		if graph.isFull() {
 			cond.Wait()
 		}
+		graph.length++
 		*graph.addAndDeleteChannel <- NewManagementMessage(AddRequest, request)
 		mut.Unlock()
 	}

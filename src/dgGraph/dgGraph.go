@@ -9,7 +9,7 @@ type dgGraph struct {
 }
 
 func NewGraph(graphLimit int) dgGraph {
-	addAndDeleteChannel := make(chan ManagementMessage)
+	addAndDeleteChannel := make(chan ManagementMessage, graphLimit)
 	return dgGraph{
 		GraphLimit:                  graphLimit,
 		lastNodeInManagementChannel: nil,
@@ -35,7 +35,6 @@ func (graph *dgGraph) Start() {
 		var printer Printer = nil;
 		switch message.messageType {
 		case AddRequest:
-			graph.length++
 			printer = graph.Client
 			newRequest := message.parameter.(*DGRequest)
 			graph.add(newRequest)

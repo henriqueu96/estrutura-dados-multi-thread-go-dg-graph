@@ -14,7 +14,7 @@ var args = os.Args
 
 
 var presetLengthNumber uint64 = 10000000;
-
+var graphLimit = 0;
 
 func main() {
 
@@ -24,7 +24,7 @@ func main() {
 	}
 
 	threadsNumber, _ := getIntArgument(1)
-	graphLimit, _ := getIntArgument(2)
+	graphLimit, _ = getIntArgument(2)
 	dependencyOdds, _ := getFloatArgument(3)
 	mylistLimit, _ := getIntArgument(4)
 	runtime.GOMAXPROCS(threadsNumber)
