@@ -21,10 +21,10 @@ type dgNode struct {
 	NextNodeInManagementChannel *chan ManagementMessage
 	GraphManagementChannel      *chan ManagementMessage
 	isOn                        bool
-	graph                       *dgGraph
+	graph                       *DGGraph
 }
 
-func newNode(request *DGRequest, graph *dgGraph) dgNode {
+func newNode(request *DGRequest, graph *DGGraph) dgNode {
 	idIndex++;
 	chanIn := make(chan ManagementMessage, 10)
 	chanOut := make(chan ManagementMessage, 10)
@@ -165,7 +165,9 @@ func (node *dgNode) answersManagementChannelReader() {
 	close(*node.answersManagementChannel)
 	close(*node.leavingNodeAnswerChannel)
 
-	node.graph.length--
+	atomic.AddInt64(&node.graph.Length, -1)
+	atomic.AddInt64(&node.graph.AddedNodes, -1)
+
 	cond.Signal()
 }
 

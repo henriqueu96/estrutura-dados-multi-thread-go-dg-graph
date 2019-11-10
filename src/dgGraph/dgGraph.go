@@ -1,40 +1,44 @@
 package dgGraph
 
-type dgGraph struct {
+import "sync/atomic"
+
+type DGGraph struct {
 	lastNodeInManagementChannel *chan ManagementMessage
 	addAndDeleteChannel         *chan ManagementMessage
-	length                      int
-	GraphLimit                  int
+	GraphLimit                  int64
 	Client                      DGClient
+	Length                      int64
+	AddedNodes                  int64
 }
 
-func NewGraph(graphLimit int) dgGraph {
+func NewGraph(graphLimit int64) DGGraph {
 	addAndDeleteChannel := make(chan ManagementMessage, graphLimit)
-	return dgGraph{
+	return DGGraph{
 		GraphLimit:                  graphLimit,
 		lastNodeInManagementChannel: nil,
 		addAndDeleteChannel:         &addAndDeleteChannel,
-		length:                      0,
+		Length:                      0,
 	}
 }
 
-func (dgGraph *dgGraph) toString() string {
+func (dgGraph *DGGraph) toString() string {
 	return "Graph";
 }
 
-func (dgGraph *dgGraph) add(request *DGRequest) {
+func (dgGraph *DGGraph) add(request *DGRequest) {
 	node := newNode(request, dgGraph)
 	dgGraph.lastNodeInManagementChannel = node.inManagementChannel
 	go node.start()
 	*node.inManagementChannel <- NewManagementMessage(enterNewNode, &node)
 }
 
-func (graph *dgGraph) Start() {
+func (graph *DGGraph) Start() {
 	for {
 		message := <-*graph.addAndDeleteChannel;
 		var printer Printer = nil;
 		switch message.messageType {
 		case AddRequest:
+			atomic.AddInt64(&graph.AddedNodes, 1)
 			printer = graph.Client
 			newRequest := message.parameter.(*DGRequest)
 			graph.add(newRequest)
@@ -57,11 +61,11 @@ func (graph *dgGraph) Start() {
 	}
 }
 
-func (dgGraph *dgGraph) isFull() bool {
-	return dgGraph.length >= dgGraph.GraphLimit-1;
+func (dgGraph *DGGraph) isFull() bool {
+	return dgGraph.Length >= dgGraph.GraphLimit-1;
 }
 
-func theLeavingNodeIsTheFirstHandle(graph *dgGraph, theLeavingNode *dgNode) {
+func theLeavingNodeIsTheFirstHandle(graph *DGGraph, theLeavingNode *dgNode) {
 	channel := make(chan ManagementMessage)
 	*theLeavingNode.inManagementChannel <- NewManagementMessage(wantToDelete, &channel)
 	message := <- channel
@@ -69,7 +73,7 @@ func theLeavingNodeIsTheFirstHandle(graph *dgGraph, theLeavingNode *dgNode) {
 	wantToDeleteAnswerChannelHandle(graph, &message)
 }
 
-func wantToDeleteAnswerChannelHandle(graph *dgGraph, message *ManagementMessage) {
+func wantToDeleteAnswerChannelHandle(graph *DGGraph, message *ManagementMessage) {
 	nodeDelete := message.parameter.(*dgNode)
 
 	graph.lastNodeInManagementChannel = nodeDelete.NextNodeInManagementChannel

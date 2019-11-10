@@ -14,7 +14,7 @@ var args = os.Args
 
 
 var presetLengthNumber uint64 = 10000000;
-var graphLimit = 0;
+var graphLimit int64 = 0;
 
 func main() {
 
@@ -24,7 +24,7 @@ func main() {
 	}
 
 	threadsNumber, _ := getIntArgument(1)
-	graphLimit, _ = getIntArgument(2)
+	graphLimit, _ = getInt64Argument(2)
 	dependencyOdds, _ := getFloatArgument(3)
 	mylistLimit, _ := getIntArgument(4)
 	runtime.GOMAXPROCS(threadsNumber)
@@ -34,13 +34,7 @@ func main() {
 	client := dgGraph.NewDGClient()
 	go client.Run(&graph, preset)
 
-	for(dgGraph.GetProcessNumber()<presetLengthNumber){
-
-		time.Sleep(time.Second)
-	}
-	time.Sleep(time.Second*10)
-
-fmt.Println(dgGraph.GetProcessNumber())
+	measureMetrics(&graph);
 }
 
 func getRandomInt(limit int) int {
@@ -58,6 +52,11 @@ func getStringArgument(index int) string {
 func getIntArgument(index int) (int, error) {
 	argument := getStringArgument(index)
 	return strconv.Atoi(argument)
+}
+
+func getInt64Argument(index int) (int64, error) {
+	argument := getStringArgument(index)
+	return strconv.ParseInt(argument, 10,64)
 }
 
 func getFloatArgument(index int) (float64, error) {
@@ -82,17 +81,34 @@ func generateRequest(value int, dependencyOdds float64) *dgGraph.DGRequest {
 	return &request
 }
 
-func measureMetrics(client *dgGraph.DGClient) {
-	var metric uint64 = 0;
-	for i := 0; i < 1; i++ {
-		var workerProcessesNumber uint64 = 0;
-		//messagesNumber := client.MessagesNumber;
-		workerProcessesNumber += dgGraph.GetProcessNumber()
-		//metric += messagesNumber - workerProcessesNumber;
-	}
-	metric = metric / 10;
-	metric += dgGraph.GetProcessNumber()
+func measureMetrics(graph *dgGraph.DGGraph) {
 
-	commands := metric / 30;
-	fmt.Print(commands);
+	var population int64 = 0;
+	var populationAvarage float64 = 0;
+	for i := 0; i < 10; i++ {
+		time.Sleep(3 * 1000000000);
+		population = graph.Length
+
+		/*
+		graphLength := atomic.LoadInt64(&graph.Length)
+		addedNodes := atomic.LoadInt64(&graph.AddedNodes)
+
+		fmt.Println("Add messages and nodes: " + int64ToString(graphLength))
+		fmt.Println("Nodes: " + int64ToString(addedNodes));*/
+	}
+
+	populationAvarage = float64(population) / 10
+
+	processed := dgGraph.GetProcessNumber()
+	processedPerSecound := float64(processed) / 30
+
+	fmt.Print(floatToString(processedPerSecound) + " - " +  floatToString(populationAvarage))
+}
+
+func floatToString(input_num float64) string {
+	return strconv.FormatFloat(input_num, 'f', 6, 64)
+}
+
+func int64ToString(input_num int64) string {
+	return strconv.FormatInt(input_num, 10)
 }

@@ -18,7 +18,7 @@ var mut = sync.Mutex{}
 var cond = sync.NewCond(&mut)
 
 
-func (client DGClient) Run(graph *dgGraph, preset []*DGRequest) {
+func (client DGClient) Run(graph *DGGraph, preset []*DGRequest) {
 	go graph.Start()
 
 	for _, request := range preset {
@@ -26,7 +26,7 @@ func (client DGClient) Run(graph *dgGraph, preset []*DGRequest) {
 		if graph.isFull() {
 			cond.Wait()
 		}
-		graph.length++
+		graph.Length++
 		*graph.addAndDeleteChannel <- NewManagementMessage(AddRequest, request)
 		mut.Unlock()
 	}
