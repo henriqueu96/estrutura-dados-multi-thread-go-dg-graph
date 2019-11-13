@@ -23,6 +23,7 @@ while [ $count -le $range ]; do
 	let count2=1
 
 	while [ $count2 -lt $range2 ]; do
+	  echo "rodando"
 		repetition[$count2]=`go run main.go $count $2 $3 $4`
 		let count2=$count2+1
 	done
